@@ -1,0 +1,45 @@
+package common
+
+import . "github.com/ModularVerification/ReusableVerificationLibrary/event"
+import p "github.com/ModularVerification/ReusableVerificationLibrary/principal"
+import tm "github.com/ModularVerification/ReusableVerificationLibrary/term"
+import tr "github.com/ModularVerification/ReusableVerificationLibrary/trace"
+
+
+const Initiate = EventType(1)
+const Respond = EventType(2)
+const FinishI = EventType(3)
+const FinishR = EventType(4)
+
+type InitiateParams struct {
+	a p.Principal
+	b p.Principal
+	na tm.Term
+}
+
+type RespondParams struct {
+	a p.Principal
+	b p.Principal
+	na tm.Term
+	nb tm.Term
+}
+
+type FinishIParams struct {
+	a p.Principal
+	b p.Principal
+	na tm.Term
+	nb tm.Term
+}
+
+type FinishRParams struct {
+	a p.Principal
+	b p.Principal
+	na tm.Term
+	nb tm.Term
+}
+
+// optional declaration of subtypes:
+InitiateParams implements EventParams
+RespondParams implements EventParams
+FinishIParams implements EventParams
+FinishRParams implements EventParams
