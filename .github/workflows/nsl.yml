@@ -14,7 +14,7 @@ jobs:
         run: apt-get update && apt-get install -y git wget jq
 
       - name: Checkout repo
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Install Go
         run: |
