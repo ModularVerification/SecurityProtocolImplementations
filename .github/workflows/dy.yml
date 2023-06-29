@@ -11,9 +11,11 @@ jobs:
       image: foa3ucuvi85/fstar-ocaml-emacs@sha256:3d29baf7a766709a9fb7aa0f038039cf302467c40cc45d5412191f4fd083ce06
     steps:  
       - name: Checkout repo
-        uses: actions/checkout@v3
-        with:
-          path: /home/build/repo
+        run: |
+          git clone https://github.com/${{ github.repository }} repo
+          cd repo
+          git checkout ${{ github.sha }}
+        working-directory: /home/build
 
       - name: Checkout DY* repo
         run: |
