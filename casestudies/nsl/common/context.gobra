@@ -293,6 +293,21 @@ func (ctx NslUsageContext) AeadPredMonotonic(t1, t2 tr.TraceEntry, usageString s
 
 ghost
 decreases
+pure func (ctx NslUsageContext) SignPred(t tr.TraceEntry, usageString string, msg, sk tm.Term) bool {
+    return false // NSL does not perform any signing
+}
+
+ghost
+decreases
+requires t1.isSuffix(t2)
+requires ctx.SignPred(t1, usageString, msg, sk)
+ensures  ctx.SignPred(t2, usageString, msg, sk)
+func (ctx NslUsageContext) SignPredMonotonic(t1, t2 tr.TraceEntry, usageString string, msg, sk tm.Term) {
+    // no body needed
+}
+
+ghost
+decreases
 pure func (ctx NslUsageContext) IsMsg1(plaintext, pk tm.Term) bool {
     return plaintext.IsTuple3() && tm.getTupleElem(plaintext, 0) == tm.integer32(1)
 }

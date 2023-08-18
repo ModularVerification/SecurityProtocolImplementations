@@ -1,6 +1,7 @@
 package initiator2
 
 import ev "github.com/ModularVerification/ReusableVerificationLibrary/event"
+import "github.com/ModularVerification/ReusableVerificationLibrary/label"
 import ll "github.com/ModularVerification/ReusableVerificationLibrary/labeledlibrary"
 import "github.com/ModularVerification/ReusableVerificationLibrary/labeling"
 import . "github.com/ModularVerification/casestudies/nsl/common"
@@ -17,6 +18,7 @@ func (a *A) proveSecurityProperties(naT, nbT tm.Term) {
 	unfold a.Mem(naT, nbT)
 	initiatorInjectiveAgreement(a.llib, a.IdA, a.IdB, naT, nbT)
 	
+	GetNslLabeling().CanFlowReflexive(a.llib.Snapshot(), label.Readers(set[p.Id]{ p.principalId(a.IdA), p.principalId(a.IdB) }))
 	// we show now that the same naT & nbT are also secret:
 	a.llib.SecrecyLemma(naT, set[p.Id]{ p.principalId(a.IdA), p.principalId(a.IdB) })
 	a.llib.SecrecyLemma(nbT, set[p.Id]{ p.principalId(a.IdA), p.principalId(a.IdB) })

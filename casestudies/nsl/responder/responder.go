@@ -321,7 +321,7 @@ func RunB(b *B /*@, defaultTerm tm.Term @*/) (err error /*@, ghost naT tm.Term, 
 	@*/
 
 	if err == nil {
-		lib.PrintResponderSuccess(msg1.Na, nb)
+		PrintResponderSuccess(msg1.Na, nb)
 	}
 	b.Version = 2
 	//@ fold b.Mem(naT, nbT)

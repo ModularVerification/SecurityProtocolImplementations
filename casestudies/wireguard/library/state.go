@@ -127,11 +127,12 @@ pure func principalId(id uint32) (res p.Id) {
 }
 @*/
 
-// the idea is that we perform an injective uint32 to string converion
-//@ ensures forall id2 uint32 :: id != id2 ==> Principal(id) != Principal(id2)
-//@ pure
+// we perform an injective uint32 to string conversion
 //@ trusted
-func Principal(id uint32) p.Principal {
+//@ decreases _
+//@ ensures forall id2 uint32 :: id != id2 ==> res != Principal(id2)
+//@ pure
+func Principal(id uint32) (res p.Principal) {
 	return fmt.Sprint(id)
 }
 

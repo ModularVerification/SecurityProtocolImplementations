@@ -37,9 +37,31 @@ func (initiator *Initiator) proveSecurityProperties(ekiT, epkRX, ekRX, kirT, kri
 }
 
 ghost
+requires InitiatorMemFwd(initiator, threadId)
+requires initiator.transportKeysLabelingFwd(ekiT, epkRX, ekRX, kirT, kriT, bSess, corrupted, threadId)
+ensures  InitiatorMemFwd(initiator, threadId)
+ensures  initiator.ImmutableStateFwd(threadId) == old(initiator.ImmutableStateFwd(threadId))
+ensures  old(initiator.SnapshotFwd(threadId)) == initiator.SnapshotFwd(threadId)
+ensures  initiator.transportKeysLabelingFwd(ekiT, epkRX, ekRX, kirT, kriT, bSess, corrupted, threadId)
+// strong forward secrecy for kir & kri:
+ensures  transportKeysStrongForwardSecrecy(initiator.SnapshotFwd(threadId), ekiT, epkRX, ekRX, kirT, kriT, initiator.getASessIdFwd(threadId), initiator.getBSessIdFwd(bSess, threadId))
+// injective agreement with KCI resistance on kir & kri:
+ensures  initiator.InjectiveAgreementWithKCIResistanceFwd(initiator.getASessIdFwd(threadId), initiator.getBSessIdFwd(bSess, threadId), sendFirstInitEv(ekiT, ekRX, kirT, kriT, initiator.getASessIdFwd(threadId), initiator.getBSessIdFwd(bSess, threadId)), sendSidREv(tm.exp(tm.generator(), ekiT), ekRX, kirT, kriT, initiator.getASessIdFwd(threadId), initiator.getBSessIdFwd(bSess, threadId)), threadId)
+func (initiator *Initiator) proveSecurityPropertiesFwd(ekiT, epkRX, ekRX, kirT, kriT tm.Term, bSess uint32, corrupted bool, threadId int) {
+    initiator.ProveStrongForwardSecretFwd(ekiT, epkRX, ekRX, kirT, kriT, bSess, corrupted, threadId)
+    initiator.ProveInjectiveAgreementWithKCIResistanceFwd(ekiT, epkRX, ekRX, kirT, kriT, bSess, corrupted, threadId)
+}
+
+ghost
 requires acc(InitiatorMem(initiator), _)
 pure func (initiator *Initiator) transportKeysLabeling(ekiT, epkRX, ekRX, kirT, kriT tm.Term, bSess uint32, corrupted bool) bool {
     return initiator.transportKeysLabelingWithSnap(initiator.Snapshot(), ekiT, epkRX, ekRX, kirT, kriT, bSess, corrupted)
+}
+
+ghost
+requires acc(InitiatorMemFwd(initiator, threadId), _)
+pure func (initiator *Initiator) transportKeysLabelingFwd(ekiT, epkRX, ekRX, kirT, kriT tm.Term, bSess uint32, corrupted bool, threadId int) bool {
+    return initiator.transportKeysLabelingWithSnapFwd(initiator.SnapshotFwd(threadId), ekiT, epkRX, ekRX, kirT, kriT, bSess, corrupted, threadId)
 }
 
 ghost
@@ -52,11 +74,11 @@ pure func (initiator *Initiator) transportKeysLabelingWithSnap(snap tr.TraceEntr
         GetWgLabeling().IsLabeledRelaxed(getHandshakeDonePrefix(snap, ekiT, epkRX, ekRX, kirT, kriT, initiator.getASessId(), initiator.getBSessId(bSess)), kriT, label.Readers(set[p.Id]{ initiator.getASessId(), initiator.getBId() })) &&
         GetWgUsage().hasKirStructure(kirT) &&
         kriT == tm.kdf2(tm.getInput(kirT)) &&
-        GetWgLabeling().IsPublicKey(snap, initiator.getASessId(), GetWgUsage().getEpkIFromKir(kirT), ekiT, labeling.KeyTypeDHPk(), WgEphemeralSk) &&
+        GetWgLabeling().IsPublicKey(snap, initiator.getASessId(), GetWgUsage().getEpkIFromKir(kirT), ekiT, labeling.KeyTypeDh(), WgEphemeralSk) &&
         GetWgUsage().getEpkRFromKir(kirT) == epkRX &&
         GetWgLabeling().IsLabeled(snap, GetWgUsage().getDhStaticFromKir(kirT), Label_DhStatic(initiator.getAId(), initiator.getBId())) &&
         (corrupted == GetWgLabeling().IsPublishable(getHandshakeDonePrefix(snap, ekiT, epkRX, ekRX, kirT, kriT, initiator.getASessId(), initiator.getBSessId(bSess)), kirT)) &&
-        (!corrupted ==> (GetWgLabeling().IsPublicKey(getHandshakeDonePrefix(snap, ekiT, epkRX, ekRX, kirT, kriT, initiator.getASessId(), initiator.getBSessId(bSess)), initiator.getBSessId(bSess), epkRX, ekRX, labeling.KeyTypeDHPk(), WgEphemeralSk) &&
+        (!corrupted ==> (GetWgLabeling().IsPublicKey(getHandshakeDonePrefix(snap, ekiT, epkRX, ekRX, kirT, kriT, initiator.getASessId(), initiator.getBSessId(bSess)), initiator.getBSessId(bSess), epkRX, ekRX, labeling.KeyTypeDh(), WgEphemeralSk) &&
             GetWgLabeling().IsLabeledPrecise(getHandshakeDonePrefix(snap, ekiT, epkRX, ekRX, kirT, kriT, initiator.getASessId(), initiator.getBSessId(bSess)), kirT, Label_k_IRPrecise(initiator.getASessId(), initiator.getBSessId(bSess))) &&
             GetWgLabeling().GetLabel(kirT) == Label_k_IR(initiator.getASessId(), initiator.getBSessId(bSess)) &&
             GetWgLabeling().IsLabeledPrecise(getHandshakeDonePrefix(snap, ekiT, epkRX, ekRX, kirT, kriT, initiator.getASessId(), initiator.getBSessId(bSess)), kriT, Label_k_RIPrecise(initiator.getASessId(), initiator.getBSessId(bSess))) &&
@@ -64,19 +86,40 @@ pure func (initiator *Initiator) transportKeysLabelingWithSnap(snap tr.TraceEntr
 }
 
 ghost
-requires InitiatorMem(initiator)
-requires oldSnap.isSuffix(initiator.Snapshot())
-requires initiator.transportKeysLabelingWithSnap(oldSnap, ekiT, epkRX, ekRX, kirT, kriT, bSess, corrupted)
-ensures  InitiatorMem(initiator)
-ensures  initiator.ImmutableState() == old(initiator.ImmutableState())
-ensures  old(initiator.Snapshot()) == initiator.Snapshot()
-ensures  initiator.transportKeysLabeling(ekiT, epkRX, ekRX, kirT, kriT, bSess, corrupted)
-func (initiator *Initiator) transportKeysLabelingMonotonic(oldSnap tr.TraceEntry, ekiT, epkRX, ekRX, kirT, kriT tm.Term, bSess uint32, corrupted bool) {
-    curSnap := initiator.Snapshot()
-    aId := initiator.getAId()
-    aSessId := initiator.getASessId()
-    bId := initiator.getBId()
-    bSessId := initiator.getBSessId(bSess)
+requires acc(InitiatorMemFwd(initiator, threadId), _)
+pure func (initiator *Initiator) transportKeysLabelingWithSnapFwd(snap tr.TraceEntry, ekiT, epkRX, ekRX, kirT, kriT tm.Term, bSess uint32, corrupted bool, threadId int) bool {
+    return GetWgLabeling().IsSecretRelaxed(snap, kirT, label.Readers(set[p.Id]{ initiator.getASessIdFwd(threadId), initiator.getBIdFwd(threadId) }), u.AeadKey(WgSendingKey)) &&
+        GetWgLabeling().IsSecretRelaxed(snap, kriT, label.Readers(set[p.Id]{ initiator.getASessIdFwd(threadId), initiator.getBIdFwd(threadId) }), u.AeadKey(WgReceivingKey)) &&
+        isHandshakeDone(snap, ekiT, epkRX, ekRX, kirT, kriT, initiator.getASessIdFwd(threadId), initiator.getBSessIdFwd(bSess, threadId)) &&
+        GetWgLabeling().IsLabeledRelaxed(getHandshakeDonePrefix(snap, ekiT, epkRX, ekRX, kirT, kriT, initiator.getASessIdFwd(threadId), initiator.getBSessIdFwd(bSess, threadId)), kirT, label.Readers(set[p.Id]{ initiator.getASessIdFwd(threadId), initiator.getBIdFwd(threadId) })) &&
+        GetWgLabeling().IsLabeledRelaxed(getHandshakeDonePrefix(snap, ekiT, epkRX, ekRX, kirT, kriT, initiator.getASessIdFwd(threadId), initiator.getBSessIdFwd(bSess, threadId)), kriT, label.Readers(set[p.Id]{ initiator.getASessIdFwd(threadId), initiator.getBIdFwd(threadId) })) &&
+        GetWgUsage().hasKirStructure(kirT) &&
+        kriT == tm.kdf2(tm.getInput(kirT)) &&
+        GetWgLabeling().IsPublicKey(snap, initiator.getASessIdFwd(threadId), GetWgUsage().getEpkIFromKir(kirT), ekiT, labeling.KeyTypeDh(), WgEphemeralSk) &&
+        GetWgUsage().getEpkRFromKir(kirT) == epkRX &&
+        GetWgLabeling().IsLabeled(snap, GetWgUsage().getDhStaticFromKir(kirT), Label_DhStatic(initiator.getAIdFwd(threadId), initiator.getBIdFwd(threadId))) &&
+        (corrupted == GetWgLabeling().IsPublishable(getHandshakeDonePrefix(snap, ekiT, epkRX, ekRX, kirT, kriT, initiator.getASessIdFwd(threadId), initiator.getBSessIdFwd(bSess, threadId)), kirT)) &&
+        (!corrupted ==> (GetWgLabeling().IsPublicKey(getHandshakeDonePrefix(snap, ekiT, epkRX, ekRX, kirT, kriT, initiator.getASessIdFwd(threadId), initiator.getBSessIdFwd(bSess, threadId)), initiator.getBSessIdFwd(bSess, threadId), epkRX, ekRX, labeling.KeyTypeDh(), WgEphemeralSk) &&
+            GetWgLabeling().IsLabeledPrecise(getHandshakeDonePrefix(snap, ekiT, epkRX, ekRX, kirT, kriT, initiator.getASessIdFwd(threadId), initiator.getBSessIdFwd(bSess, threadId)), kirT, Label_k_IRPrecise(initiator.getASessIdFwd(threadId), initiator.getBSessIdFwd(bSess, threadId))) &&
+            GetWgLabeling().GetLabel(kirT) == Label_k_IR(initiator.getASessIdFwd(threadId), initiator.getBSessIdFwd(bSess, threadId)) &&
+            GetWgLabeling().IsLabeledPrecise(getHandshakeDonePrefix(snap, ekiT, epkRX, ekRX, kirT, kriT, initiator.getASessIdFwd(threadId), initiator.getBSessIdFwd(bSess, threadId)), kriT, Label_k_RIPrecise(initiator.getASessIdFwd(threadId), initiator.getBSessIdFwd(bSess, threadId))) &&
+            GetWgLabeling().GetLabel(kriT) == Label_k_RI(initiator.getASessIdFwd(threadId), initiator.getBSessIdFwd(bSess, threadId))))
+}
+
+ghost
+requires InitiatorMemFwd(initiator, threadId)
+requires oldSnap.isSuffix(initiator.SnapshotFwd(threadId))
+requires initiator.transportKeysLabelingWithSnapFwd(oldSnap, ekiT, epkRX, ekRX, kirT, kriT, bSess, corrupted, threadId)
+ensures  InitiatorMemFwd(initiator, threadId)
+ensures  initiator.ImmutableStateFwd(threadId) == old(initiator.ImmutableStateFwd(threadId))
+ensures  old(initiator.SnapshotFwd(threadId)) == initiator.SnapshotFwd(threadId)
+ensures  initiator.transportKeysLabelingFwd(ekiT, epkRX, ekRX, kirT, kriT, bSess, corrupted, threadId)
+func (initiator *Initiator) transportKeysLabelingFwdMonotonic(oldSnap tr.TraceEntry, ekiT, epkRX, ekRX, kirT, kriT tm.Term, bSess uint32, corrupted bool, threadId int) {
+    curSnap := initiator.SnapshotFwd(threadId)
+    aId := initiator.getAIdFwd(threadId)
+    aSessId := initiator.getASessIdFwd(threadId)
+    bId := initiator.getBIdFwd(threadId)
+    bSessId := initiator.getBSessIdFwd(bSess, threadId)
     isHandshakeDoneMonotonic(oldSnap, curSnap, ekiT, epkRX, ekRX, kirT, kriT, aSessId, bSessId)
     oldHandshakeDonePrefix := getHandshakeDonePrefix(oldSnap, ekiT, epkRX, ekRX, kirT, kriT, aSessId, bSessId)
     newHandshakeDonePrefix := getHandshakeDonePrefix(curSnap, ekiT, epkRX, ekRX, kirT, kriT, aSessId, bSessId)
@@ -84,15 +127,19 @@ func (initiator *Initiator) transportKeysLabelingMonotonic(oldSnap tr.TraceEntry
     getHandshakeDonePrefixTwice(oldSnap, curSnap, ekiT, epkRX, ekRX, kirT, kriT, aSessId, bSessId)
     if oldHandshakeDonePrefix != newHandshakeDonePrefix {
         // derive a contradiction here because the event is unique, thus oldHandshakeDonePrefix == newHandshakeDonePrefix
-        unfold InitiatorMem(initiator)
+        unfold InitiatorMemFwd(initiator, threadId)
         event := sendFirstInitEv(ekiT, ekRX, kirT, kriT, aSessId, bSessId)
-        initiator.llib.UniqueEventIsUnique(aId.getPrincipal(), event)
+        if threadId == 0 {
+            initiator.llib.UniqueEventIsUnique(aId.getPrincipal(), event)
+        } else {
+            initiator.llib2.UniqueEventIsUnique(aId.getPrincipal(), event)
+        }
     }
     GetWgLabeling().IsValidMonotonic(oldSnap, curSnap, kirT)
     GetWgLabeling().IsValidMonotonic(oldSnap, curSnap, kriT)
     GetWgLabeling().CanFlowMonotonic(oldSnap, curSnap, label.Readers(set[p.Id]{ aSessId, bId }), GetWgLabeling().GetLabel(kirT))
     GetWgLabeling().CanFlowMonotonic(oldSnap, curSnap, label.Readers(set[p.Id]{ aSessId, bId }), GetWgLabeling().GetLabel(kriT))
-    GetWgLabeling().IsPublicKeyMonotonic(oldSnap, curSnap, initiator.getASessId(), GetWgUsage().getEpkIFromKir(kirT), ekiT, labeling.KeyTypeDHPk(), WgEphemeralSk)
+    GetWgLabeling().IsPublicKeyMonotonic(oldSnap, curSnap, aSessId, GetWgUsage().getEpkIFromKir(kirT), ekiT, labeling.KeyTypeDh(), WgEphemeralSk)
     GetWgLabeling().IsLabeledMonotonic(oldSnap, curSnap, GetWgUsage().getDhStaticFromKir(kirT), Label_DhStatic(aId, bId))
 }
 
@@ -112,7 +159,7 @@ func (initiator *Initiator) ProveStrongForwardSecret(ekiT, epkRX, ekRX, kirT, kr
     bSessId := initiator.getBSessId(bSess)
     snapshot := initiator.Snapshot()
     corruptIds := snapshot.getCorruptIds()
-    prevSnapshot := getHandshakeDonePrefix(initiator.Snapshot(), ekiT, epkRX, ekRX, kirT, kriT, aSessId, bSessId)
+    prevSnapshot := getHandshakeDonePrefix(snapshot, ekiT, epkRX, ekRX, kirT, kriT, aSessId, bSessId)
     prevCorruptIds := prevSnapshot.getCorruptIds()
     aSessBId := label.Readers(set[p.Id]{ aSessId, bId })
     if corrupted {
@@ -158,6 +205,79 @@ func (initiator *Initiator) ProveStrongForwardSecret(ekiT, epkRX, ekRX, kirT, kr
                 // we have reached a contradiction
             }
             fold InitiatorMem(initiator)
+            // we know now that `kirT` and `kriT` are unknown to the attacker at `snapshot`
+        }
+    }
+}
+
+ghost
+requires InitiatorMemFwd(initiator, threadId)
+requires initiator.transportKeysLabelingFwd(ekiT, epkRX, ekRX, kirT, kriT, bSess, corrupted, threadId)
+ensures  InitiatorMemFwd(initiator, threadId)
+ensures  initiator.ImmutableStateFwd(threadId) == old(initiator.ImmutableStateFwd(threadId))
+ensures  old(initiator.SnapshotFwd(threadId)) == initiator.SnapshotFwd(threadId)
+ensures  initiator.transportKeysLabelingFwd(ekiT, epkRX, ekRX, kirT, kriT, bSess, corrupted, threadId)
+ensures  transportKeysStrongForwardSecrecy(initiator.SnapshotFwd(threadId), ekiT, epkRX, ekRX, kirT, kriT, initiator.getASessIdFwd(threadId), initiator.getBSessIdFwd(bSess, threadId))
+func (initiator *Initiator) ProveStrongForwardSecretFwd(ekiT, epkRX, ekRX, kirT, kriT tm.Term, bSess uint32, corrupted bool, threadId int) {
+    aSessId := initiator.getASessIdFwd(threadId)
+    bId := initiator.getBIdFwd(threadId)
+    bSessId := initiator.getBSessIdFwd(bSess, threadId)
+    snapshot := initiator.SnapshotFwd(threadId)
+    corruptIds := snapshot.getCorruptIds()
+    prevSnapshot := getHandshakeDonePrefix(snapshot, ekiT, epkRX, ekRX, kirT, kriT, aSessId, bSessId)
+    prevCorruptIds := prevSnapshot.getCorruptIds()
+    aSessBId := label.Readers(set[p.Id]{ aSessId, bId })
+    if corrupted {
+        GetWgLabeling().PublishableImpliesCorruption(prevSnapshot, kirT, aSessBId)
+        // the following assert stmt is needed:
+        assert set[p.Id]{ aSessId } union set[p.Id]{ bId } == set[p.Id]{ aSessId, bId }
+        GetWgLabeling().containsCorruptIdSplit(prevCorruptIds, set[p.Id]{ aSessId }, set[p.Id]{ bId })
+        if tr.containsCorruptId(prevCorruptIds, set[p.Id]{ aSessId }) {
+            GetWgLabeling().containsCorruptIdMonotonic(prevCorruptIds, set[p.Id]{ aSessId }, set[p.Id]{ aSessId, bSessId })
+            prevSnapshot.getCorruptIdsMonotonic(snapshot)
+        }
+    } else {
+        // `kirT` and `kriT` are not publishable at `prevSnapshot`
+        kirL := GetWgLabeling().GetLabel(kirT)
+        justASess := label.Readers(set[p.Id]{ aSessId })
+        justBSess := label.Readers(set[p.Id]{ bSessId })
+        aSessJoinBSess := label.Join(justASess, justBSess)
+
+        // show first that aSessId and bSessId cannot have been corrupted at `prevSnapshot`:
+        GetWgLabeling().CanFlowResolveJoinRhs(prevSnapshot, kirL, justASess, justBSess)
+        GetWgLabeling().NotPublishableImpliesNoCorruption(prevSnapshot, kirT, justASess)
+        GetWgLabeling().NotPublishableImpliesNoCorruption(prevSnapshot, kirT, justBSess)
+        GetWgLabeling().containsCorruptIdNotUnion(prevCorruptIds, set[p.Id]{ aSessId }, set[p.Id]{ bSessId })
+        // the following assert stmt is necessary:
+        assert set[p.Id]{ aSessId } union set[p.Id]{ bSessId } == set[p.Id]{ aSessId, bSessId }
+        assert !tr.containsCorruptId(prevCorruptIds, set[p.Id]{ aSessId, bSessId })
+
+        // we have to show now that `kirT` and `kriT` remain unknown to the attacker even in the future (i.e. at `snapshot`):
+        GetWgLabeling().IsValidMonotonic(prevSnapshot, snapshot, kirT)
+        GetWgLabeling().IsValidMonotonic(prevSnapshot, snapshot, kriT)
+        GetWgLabeling().CanFlowMonotonic(prevSnapshot, snapshot, aSessJoinBSess, kirL)
+        GetWgLabeling().RelaxedLabelingImpliesNotPublishableOrCorruption(snapshot, kirT, justASess, justBSess)
+        if !GetWgLabeling().IsPublishable(snapshot, kirT) {
+            // this also implies that `kriT` is not publishable
+            // show by contradiction that this implies that the attacker cannot know `kirT`:
+            unfold InitiatorMemFwd(initiator, threadId)
+            if att.attackerKnows(snapshot, kirT) {
+                if threadId == 0 {
+                    initiator.llib.AttackerOnlyKnowsPublishableValues(kirT)
+                } else {
+                    initiator.llib2.AttackerOnlyKnowsPublishableValues(kirT)
+                }
+                // we have reached a contradiction
+            }
+            if att.attackerKnows(snapshot, kriT) {
+                if threadId == 0 {
+                    initiator.llib.AttackerOnlyKnowsPublishableValues(kriT)
+                } else {
+                    initiator.llib2.AttackerOnlyKnowsPublishableValues(kriT)
+                }
+                // we have reached a contradiction
+            }
+            fold InitiatorMemFwd(initiator, threadId)
             // we know now that `kirT` and `kriT` are unknown to the attacker at `snapshot`
         }
     }
@@ -234,13 +354,31 @@ func getHandshakeDonePrefixTwice(t0, t1 tr.TraceEntry, ekiT, epkRX, ekRX, kirT, 
 ghost
 requires acc(InitiatorMem(initiator), _)
 pure func (initiator *Initiator) NonInjectiveAgreementWithKCIResistance(aSessId, bSessId p.Id, commit, running ev.Event) bool {
-    return unfolding InitiatorMem(initiator) in initiator.llib.NonInjectiveAgreement(aSessId.getPrincipal(), bSessId.getPrincipal(), commit, running, set[p.Id]{ aSessId, bSessId.getPrincipalId() })
+    return unfolding acc(InitiatorMem(initiator), _) in initiator.llib.NonInjectiveAgreement(aSessId.getPrincipal(), bSessId.getPrincipal(), commit, running, set[p.Id]{ aSessId, bSessId.getPrincipalId() })
+}
+
+ghost
+requires acc(InitiatorMemFwd(initiator, threadId), _)
+pure func (initiator *Initiator) NonInjectiveAgreementWithKCIResistanceFwd(aSessId, bSessId p.Id, commit, running ev.Event, threadId int) bool {
+    return unfolding acc(InitiatorMemFwd(initiator, threadId), _) in
+        threadId == 0 ?
+            initiator.llib.NonInjectiveAgreement(aSessId.getPrincipal(), bSessId.getPrincipal(), commit, running, set[p.Id]{ aSessId, bSessId.getPrincipalId() }) :
+            initiator.llib2.NonInjectiveAgreement(aSessId.getPrincipal(), bSessId.getPrincipal(), commit, running, set[p.Id]{ aSessId, bSessId.getPrincipalId() })
 }
 
 ghost
 requires acc(InitiatorMem(initiator), _)
 pure func (initiator *Initiator) InjectiveAgreementWithKCIResistance(aSessId, bSessId p.Id, commit, running ev.Event) bool {
-    return unfolding InitiatorMem(initiator) in initiator.llib.InjectiveAgreement(aSessId.getPrincipal(), bSessId.getPrincipal(), commit, running, set[p.Id]{ aSessId, bSessId.getPrincipalId() })
+    return unfolding acc(InitiatorMem(initiator), _) in initiator.llib.InjectiveAgreement(aSessId.getPrincipal(), bSessId.getPrincipal(), commit, running, set[p.Id]{ aSessId, bSessId.getPrincipalId() })
+}
+
+ghost
+requires acc(InitiatorMemFwd(initiator, threadId), _)
+pure func (initiator *Initiator) InjectiveAgreementWithKCIResistanceFwd(aSessId, bSessId p.Id, commit, running ev.Event, threadId int) bool {
+    return unfolding acc(InitiatorMemFwd(initiator, threadId), _) in
+        threadId == 0 ?
+            initiator.llib.InjectiveAgreement(aSessId.getPrincipal(), bSessId.getPrincipal(), commit, running, set[p.Id]{ aSessId, bSessId.getPrincipalId() }) :
+            initiator.llib2.InjectiveAgreement(aSessId.getPrincipal(), bSessId.getPrincipal(), commit, running, set[p.Id]{ aSessId, bSessId.getPrincipalId() })
 }
 
 ghost
@@ -279,6 +417,48 @@ func (initiator *Initiator) ProveNonInjectiveAgreement(ekiT, epkRX, ekRX, kirT, 
 
 ghost
 decreases
+requires InitiatorMemFwd(initiator, threadId)
+requires isHandshakeDone(initiator.SnapshotFwd(threadId), ekiT, epkRX, ekRX, kirT, kriT, initiator.getASessIdFwd(threadId), initiator.getBSessIdFwd(bSess, threadId))
+ensures  InitiatorMemFwd(initiator, threadId)
+ensures  initiator.ImmutableStateFwd(threadId) == old(initiator.ImmutableStateFwd(threadId))
+ensures  old(initiator.SnapshotFwd(threadId)) == initiator.SnapshotFwd(threadId)
+ensures  initiator.NonInjectiveAgreementWithKCIResistanceFwd(initiator.getASessIdFwd(threadId), initiator.getBSessIdFwd(bSess, threadId), sendFirstInitEv(ekiT, ekRX, kirT, kriT, initiator.getASessIdFwd(threadId), initiator.getBSessIdFwd(bSess, threadId)), sendSidREv(tm.exp(tm.generator(), ekiT), ekRX, kirT, kriT, initiator.getASessIdFwd(threadId), initiator.getBSessIdFwd(bSess, threadId)), threadId)
+// the following postcondition provides further insights about the returned witness:
+ensures (optCorruptedId != none[p.Id]) == tr.containsCorruptId(getHandshakeDonePrefix(initiator.SnapshotFwd(threadId), ekiT, epkRX, ekRX, kirT, kriT, initiator.getASessIdFwd(threadId), initiator.getBSessIdFwd(bSess, threadId)).getCorruptIds(), set[p.Id]{ initiator.getASessIdFwd(threadId), initiator.getBIdFwd(threadId) })
+ensures  optCorruptedId != none[p.Id] ==>
+    (get(optCorruptedId) == initiator.getASessIdFwd(threadId) || get(optCorruptedId) == initiator.getBIdFwd(threadId))
+func (initiator *Initiator) ProveNonInjectiveAgreementFwd(ekiT, epkRX, ekRX, kirT, kriT tm.Term, bSess uint32, corrupted bool, threadId int) (optCorruptedId option[p.Id]) {
+	snapshot := initiator.SnapshotFwd(threadId)
+    aId := initiator.getAIdFwd(threadId)
+    aSessId := initiator.getASessIdFwd(threadId)
+    bId := initiator.getBIdFwd(threadId)
+    bSessId := initiator.getBSessIdFwd(bSess, threadId)
+    commitEv := sendFirstInitEv(ekiT, ekRX, kirT, kriT, aSessId, bSessId)
+    epkiT := tm.exp(tm.generator(), ekiT)
+    runningEv := sendSidREv(epkiT, ekRX, kirT, kriT, aSessId, bSessId)
+    unfold InitiatorMemFwd(initiator, threadId)
+    var commitEvWitness tr.TraceEntry
+    if threadId == 0 {
+        commitEvWitness = initiator.llib.EventOccursImpliesEventInv(aSessId.getPrincipal(), commitEv)
+    } else {
+        commitEvWitness = initiator.llib2.EventOccursImpliesEventInv(aSessId.getPrincipal(), commitEv)
+    }
+    if tr.containsCorruptId(commitEvWitness.getCorruptIds(), set[p.Id]{ aSessId, bId }) {
+        assert set[p.Id]{ aSessId, bId } == set[p.Id]{ aSessId } union set[p.Id]{ bId }
+        GetWgLabeling().containsCorruptIdSplit(commitEvWitness.getCorruptIds(), set[p.Id]{ aSessId }, set[p.Id]{ bId })
+        if tr.containsCorruptId(commitEvWitness.getCorruptIds(), set[p.Id]{ aSessId }) {
+		    optCorruptedId = some(aSessId)
+	    } else {
+            optCorruptedId = some(bId)
+        }
+	} else {
+        assert optCorruptedId == none[p.Id]
+    }
+    fold InitiatorMemFwd(initiator, threadId)
+}
+
+ghost
+decreases
 requires InitiatorMem(initiator)
 requires isHandshakeDone(initiator.Snapshot(), ekiT, epkRX, ekRX, kirT, kriT, initiator.getASessId(), initiator.getBSessId(bSess))
 ensures  InitiatorMem(initiator)
@@ -300,4 +480,37 @@ func (initiator *Initiator) ProveInjectiveAgreementWithKCIResistance(ekiT, epkRX
 		initiator.llib.UniqueEventIsUnique(aSessId.getPrincipal(), commitEv)
 	}
     fold InitiatorMem(initiator)
+}
+
+ghost
+decreases
+requires InitiatorMemFwd(initiator, threadId)
+requires isHandshakeDone(initiator.SnapshotFwd(threadId), ekiT, epkRX, ekRX, kirT, kriT, initiator.getASessIdFwd(threadId), initiator.getBSessIdFwd(bSess, threadId))
+ensures  InitiatorMemFwd(initiator, threadId)
+ensures  initiator.ImmutableStateFwd(threadId) == old(initiator.ImmutableStateFwd(threadId))
+ensures  old(initiator.SnapshotFwd(threadId)) == initiator.SnapshotFwd(threadId)
+ensures  initiator.InjectiveAgreementWithKCIResistanceFwd(initiator.getASessIdFwd(threadId), initiator.getBSessIdFwd(bSess, threadId), sendFirstInitEv(ekiT, ekRX, kirT, kriT, initiator.getASessIdFwd(threadId), initiator.getBSessIdFwd(bSess, threadId)), sendSidREv(tm.exp(tm.generator(), ekiT), ekRX, kirT, kriT, initiator.getASessIdFwd(threadId), initiator.getBSessIdFwd(bSess, threadId)), threadId)
+// the following postcondition provides further insights about the returned witness:
+ensures (optCorruptedId != none[p.Id]) == tr.containsCorruptId(getHandshakeDonePrefix(initiator.SnapshotFwd(threadId), ekiT, epkRX, ekRX, kirT, kriT, initiator.getASessIdFwd(threadId), initiator.getBSessIdFwd(bSess, threadId)).getCorruptIds(), set[p.Id]{ initiator.getASessIdFwd(threadId), initiator.getBIdFwd(threadId) })
+ensures  optCorruptedId != none[p.Id] ==>
+    (get(optCorruptedId) == initiator.getASessIdFwd(threadId) || get(optCorruptedId) == initiator.getBIdFwd(threadId))
+func (initiator *Initiator) ProveInjectiveAgreementWithKCIResistanceFwd(ekiT, epkRX, ekRX, kirT, kriT tm.Term, bSess uint32, corrupted bool, threadId int) (optCorruptedId option[p.Id]) {
+	aSessId := initiator.getASessIdFwd(threadId)
+    bSessId := initiator.getBSessIdFwd(bSess, threadId)
+    optCorruptedId = initiator.ProveNonInjectiveAgreementFwd(ekiT, epkRX, ekRX, kirT, kriT, bSess, corrupted, threadId)
+    commitEv := sendFirstInitEv(ekiT, ekRX, kirT, kriT, aSessId, bSessId)
+    unfold InitiatorMemFwd(initiator, threadId)
+    if threadId == 0 {
+        initiator.llib.EventOccursImpliesEventInv(aSessId.getPrincipal(), commitEv)
+    } else {
+        initiator.llib2.EventOccursImpliesEventInv(aSessId.getPrincipal(), commitEv)
+    }
+	if optCorruptedId == none[p.Id] {
+        if threadId == 0 {
+            initiator.llib.UniqueEventIsUnique(aSessId.getPrincipal(), commitEv)
+        } else {
+            initiator.llib2.UniqueEventIsUnique(aSessId.getPrincipal(), commitEv)
+        }
+	}
+    fold InitiatorMemFwd(initiator, threadId)
 }

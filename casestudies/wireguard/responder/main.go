@@ -39,9 +39,9 @@ func (responder *Responder) RunResponder(sid, a, b uint32, llib *ll.LabeledLibra
 //@ ensures  ok ==> getKR(responder) == tm.gamma(ltkT)
 //@ ensures  ok ==> getPkI(responder) == tm.gamma(ltpkT)
 //@ ensures  ok ==> GetWgLabeling().IsLabeled(responder.Snapshot(), pskT, label.Public())
-//@ ensures  ok ==> GetWgLabeling().IsSecretKey(responder.Snapshot(), responder.getBId(), ltkT, labeling.KeyTypeDHPk(), WgKey)
+//@ ensures  ok ==> GetWgLabeling().IsSecretKey(responder.Snapshot(), responder.getBId(), ltkT, labeling.KeyTypeDh(), WgKey)
 //@ ensures  ok ==> ltkT.IsRandom()
-//@ ensures  ok ==> GetWgLabeling().IsPublicKeyExistential(responder.Snapshot(), responder.getAId(), ltpkT, labeling.KeyTypeDHPk(), WgKey)
+//@ ensures  ok ==> GetWgLabeling().IsPublicKeyExistential(responder.Snapshot(), responder.getAId(), ltpkT, labeling.KeyTypeDh(), WgKey)
 func (responder *Responder) getInitialState(sid, a, b uint32, llib *ll.LabeledLibrary) (ok bool /*@, ghost pskT tm.Term, ghost ltkT tm.Term, ghost ltpkT tm.Term @*/) {
 
 	var psk lib.ByteString

@@ -83,9 +83,9 @@ func patternProperty1(llib *ll.LabeledLibrary, bId p.Id, rid, kI, ltpk, psk, ekI
 pred pattern1Constraints(llib *ll.LabeledLibrary, bId p.Id, rid, kI, ltpk, psk, ekI, c3, h4 tm.Term) {
     acc(llib.Mem(), 1/16) &&
     llib.Owner().getSession() == some(tm.getInt32(rid)) &&
-    GetWgLabeling().IsSecretKey(llib.Snapshot(), llib.Owner().getPrincipalId(), kI, labeling.KeyTypeDHPk(), WgKey) &&
-    GetWgLabeling().IsSecretKey(llib.Snapshot(), llib.Owner(), ekI, labeling.KeyTypeDHPk(), WgEphemeralSk) &&
-    li.c3Props(llib.Snapshot(), ekI, c3, llib.Owner(), bId) &&
+    GetWgLabeling().IsSecretKey(llib.Snapshot(), llib.Owner().getPrincipalId(), kI, labeling.KeyTypeDh(), WgKey) &&
+    GetWgLabeling().IsSecretKey(llib.Snapshot(), llib.OwnerWoThread(), ekI, labeling.KeyTypeDh(), WgEphemeralSk) &&
+    li.c3Props(llib.Snapshot(), ekI, c3, llib.OwnerWoThread(), bId) &&
     li.h4Props(llib.Snapshot(), h4, kI, ltpk, ekI)
 }
 
@@ -103,8 +103,8 @@ func patternProperty3(llib *ll.LabeledLibrary, aId p.Id, kR, pkI, sidI, epkI, ts
 /** constraints the parameters of patternProperty3, patternRequirement3, and patternRequirement3_2 to the trace */
 pred pattern3Constraints(llib *ll.LabeledLibrary, aId p.Id, kR, pkI tm.Term) {
     acc(llib.Mem(), 1/16) &&
-    GetWgLabeling().IsSecretKey(llib.Snapshot(), llib.Owner().getPrincipalId(), kR, labeling.KeyTypeDHPk(), WgKey) &&
-    GetWgLabeling().IsPublicKeyExistential(llib.Snapshot(), aId, pkI, labeling.KeyTypeDHPk(), WgKey)
+    GetWgLabeling().IsSecretKey(llib.Snapshot(), llib.Owner().getPrincipalId(), kR, labeling.KeyTypeDh(), WgKey) &&
+    GetWgLabeling().IsPublicKeyExistential(llib.Snapshot(), aId, pkI, labeling.KeyTypeDh(), WgKey)
 }
 
 ghost
@@ -124,5 +124,5 @@ pred pattern4Constraints(llib *ll.LabeledLibrary, foreignId p.Id, keyUsage strin
     acc(llib.Mem(), 1/16) &&
     llib.Owner().getSession() == some(tm.getInt32(rid)) &&
     (keyUsage == "WG kir Key" || keyUsage == "WG kri Key") &&
-    GetWgLabeling().IsSecretRelaxed(llib.Snapshot(), foreignKey, label.Readers(set[p.Id]{ llib.Owner(), foreignId }), u.AeadKey(keyUsage))
+    GetWgLabeling().IsSecretRelaxed(llib.Snapshot(), foreignKey, label.Readers(set[p.Id]{ llib.OwnerWoThread(), foreignId }), u.AeadKey(keyUsage))
 }

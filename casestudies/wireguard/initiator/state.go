@@ -15,6 +15,7 @@ type Initiator struct {
 	HandshakeInfo lib.HandshakeArguments
 	a, b          uint32
 	llib 		  *ll.LabeledLibrary // added
+	llib2 		  *ll.LabeledLibrary // added
 }
 
 /*@
@@ -72,8 +73,15 @@ pred InitiatorMem(initiator *Initiator) {
 	initiator.llib.Mem() &&
 	initiator.llib.Ctx() == GetWgContext() &&
 	initiator.llib.LabelCtx() == GetWgLabeling() &&
-	unfolding lib.HandshakeArgsMem(&initiator.HandshakeInfo) in
-		initiator.llib.Owner() == p.sessionId(lib.Principal(initiator.a), initiator.HandshakeInfo.LocalIndex)
+	acc(&initiator.llib2) &&
+	initiator.llib2.Mem() &&
+	initiator.llib2.Ctx() == GetWgContext() &&
+	initiator.llib2.LabelCtx() == GetWgLabeling() &&
+	(unfolding lib.HandshakeArgsMem(&initiator.HandshakeInfo) in
+		initiator.llib.Owner() == p.sessionThreadId(lib.Principal(initiator.a), initiator.HandshakeInfo.LocalIndex, 0) &&
+		initiator.llib2.Owner() == p.sessionThreadId(lib.Principal(initiator.a), initiator.HandshakeInfo.LocalIndex, 1) &&
+		unfolding initiator.llib.Mem() in unfolding initiator.llib2.Mem() in
+			initiator.llib.manager.ImmutableState(initiator.llib.ctx, initiator.llib.owner) == initiator.llib2.manager.ImmutableState(initiator.llib2.ctx, initiator.llib2.owner))
 }
 
 ghost

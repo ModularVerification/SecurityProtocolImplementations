@@ -246,7 +246,7 @@ func RunA(a *A /*@, defaultTerm tm.Term @*/) (err error /*@, ghost naT tm.Term, 
 	//@ assert labelCtx.IsPublishable(s5, ciphertext3T)
 	err = a.llib.Send(a.IdA, a.IdB, ciphertext3 /*@, ciphertext3T @*/)
 	if err == nil {
-		lib.PrintInitiatorSuccess(na, msg2.Nb)
+		PrintInitiatorSuccess(na, msg2.Nb)
 	}
 	//@ s6 := a.llib.Snapshot()
 	//@ s0.isSuffixTransitive(s5, s6)

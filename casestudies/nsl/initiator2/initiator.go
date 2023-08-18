@@ -283,7 +283,7 @@ func RecvMsg2SendMsg3(a *A /*@, ghost naT tm.Term, ghost defaultTerm tm.Term @*/
 	//@ assert labelCtx.IsPublishable(s2, ciphertext3T)
 	err = a.llib.Send(a.IdA, a.IdB, ciphertext3 /*@, ciphertext3T @*/)
 	if err == nil {
-		lib.PrintInitiatorSuccess(a.na, msg2.Nb)
+		PrintInitiatorSuccess(a.na, msg2.Nb)
 	}
 	//@ s3 := a.llib.Snapshot()
 	//@ s0.isSuffixTransitive(s2, s3)

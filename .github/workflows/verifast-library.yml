@@ -1,4 +1,4 @@
-name: Verification of Reusable Verification Library for VeriFast
+name: Verification of Reusable Verification Library in C
 
 on:
   push:
@@ -24,6 +24,6 @@ jobs:
           VERIFAST_BIN="$PWD/verifast-${{ env.VERIFAST_VERSION }}/bin"
           echo "$VERIFAST_BIN" >> $GITHUB_PATH
 
-      - name: Verify Library in VeriFast
+      - name: Verify Reusable Verification Library in VeriFast
         run: ./verify.sh
-        working-directory: VeriFastPrototype
+        working-directory: VeriFastPrototype/reusable_verification_library

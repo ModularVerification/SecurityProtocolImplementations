@@ -25,7 +25,7 @@ import (
 	"github.com/ModularVerification/casestudies/wireguard/responder"
 )
 
-const logLevel = log.LogLevelVerbose
+const logLevel = log.LogLevelError
 
 const (
 	ExitSetupSuccess = 0
@@ -122,11 +122,15 @@ func main() {
 		protocol = func(d *device.Device) {
 
 			libState, hsInfo, ok := library.NewLibraryState(d)
+			// we now have full permission to libState and hsInfo
 			if !ok {
 				return
 			}
 			labeledLib := labeledlib.NewLibrary(library.Principal(0), library.Principal(1))
+			// we now have a full permission to labeledLib.Mem()
+			// the following calls each consume 1/8 permissions to labeledLib.Mem and libState.Mem
 			llib := ll.NewLabeledLibrary(labeledLib, &libState)
+			llib2 := ll.NewLabeledLibrary(labeledLib, &libState)
 
 			rid := rand.Uint32()
 			if d.IsInitiator {
@@ -135,7 +139,7 @@ func main() {
 					HandshakeInfo: hsInfo,
 				}
 				_ = w
-				w.RunInitiator(rid, 0, 1, llib)
+				w.RunInitiator(rid, 0, 1, llib, llib2)
 			} else {
 				w := &responder.Responder{
 					LibState:      libState,

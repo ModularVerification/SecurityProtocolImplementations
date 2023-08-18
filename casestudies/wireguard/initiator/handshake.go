@@ -25,8 +25,8 @@ import lib "github.com/ModularVerification/casestudies/wireguard/library"
 //@ requires getKI(initiator) == tm.gamma(ltkT)
 //@ requires getPkR(initiator) == tm.gamma(ltpkT)
 //@ requires GetWgLabeling().IsLabeled(initiator.Snapshot(), pskT, label.Public())
-//@ requires GetWgLabeling().IsSecretKey(initiator.Snapshot(), initiator.getAId(), ltkT, labeling.KeyTypeDHPk(), WgKey)
-//@ requires GetWgLabeling().IsPublicKeyExistential(initiator.Snapshot(), initiator.getBId(), ltpkT, labeling.KeyTypeDHPk(), WgKey)
+//@ requires GetWgLabeling().IsSecretKey(initiator.Snapshot(), initiator.getAId(), ltkT, labeling.KeyTypeDh(), WgKey)
+//@ requires GetWgLabeling().IsPublicKeyExistential(initiator.Snapshot(), initiator.getBId(), ltpkT, labeling.KeyTypeDh(), WgKey)
 //@ ensures  InitiatorMem(initiator)
 //@ ensures  initiator.ImmutableState() == old(initiator.ImmutableState())
 //@ ensures  old(initiator.Snapshot()).isSuffix(initiator.Snapshot())
@@ -57,55 +57,58 @@ func (initiator *Initiator) runHandshake( /*@ ghost pskT tm.Term, ghost ltkT tm.
 	//@ fold acc(InitiatorMem(initiator), 1/2)
 
 	//@ ghost var c7T tm.Term
+	//@ s1 := initiator.Snapshot()
 	//@ BeforeRecvResp:
 	ok /*@, corrupted, bSess, epkRX, ekRX, c7T @*/ = initiator.receiveResponse(handshake /*@, pskT, ltkT, ltpkT, ekiT, c3T, h4T @*/)
+	//@ s2 := initiator.Snapshot()
+	//@ s0.isSuffixTransitive(s1, s2)
 	if !ok {
 		return
 	}
 
 	//@ unfold acc(InitiatorMem(initiator), 1/2)
 	(initiator.LibState).Println("Success Consuming Response")
-	//@ fold acc(InitiatorMem(initiator), 1/2)
+	//@ unfold acc(InitiatorMem(initiator), 1/2)
+	//@ initiator.llib.ApplyMonotonicity()
+	//@ fold InitiatorMem(initiator)
 
 	//@ BeforeSymSess:
 	conn = initiator.beginSymmetricSession(handshake /*@, c7T @*/)
 
 	//@ aId := initiator.getAId()
 	//@ bSessId := initiator.getBSessId(bSess)
-	//@ kirT = CreateKir(initiator.Snapshot(), ltkT, pskT, ekiT, c3T, epkRX, aSessId, bSessId)
-	//@ kriT = CreateKri(initiator.Snapshot(), ltkT, pskT, ekiT, c3T, epkRX, aSessId, bSessId)
-
-	// create handshake done event:
-	//@ s1 := initiator.Snapshot()
+	// GetWgLabeling().IsSecretKeyMonotonic(s0, s2, )
+	//@ kirT = CreateKir(s2, ltkT, pskT, ekiT, c3T, epkRX, aSessId, bSessId)
+	//@ kriT = CreateKri(s2, ltkT, pskT, ekiT, c3T, epkRX, aSessId, bSessId)
 
 	/*@
 	ghost if !corrupted {
 		// the following proof steps are needed to derive the event's invariant
 		aBSessL := label.Join(label.Readers(set[p.Id]{ aId }), label.Readers(set[p.Id]{ bSessId }))
 		aSessBSessL := label.Join(label.Readers(set[p.Id]{ aSessId }), label.Readers(set[p.Id]{ bSessId }))
-		GetWgLabeling().PrincipalsJoinFlowsToBSessions(s1, bSessId, aSessId)
-		GetWgLabeling().CanFlowTransitive(s1, aBSessL, aSessBSessL, GetWgLabeling().GetLabel(kirT))
+		GetWgLabeling().PrincipalsJoinFlowsToBSessions(s2, bSessId, aSessId)
+		GetWgLabeling().CanFlowTransitive(s2, aBSessL, aSessBSessL, GetWgLabeling().GetLabel(kirT))
 	}
 	sendFirstInitEv := sendFirstInitEv(ekiT, ekRX, kirT, kriT, aSessId, bSessId)
 	ghost if corrupted {
-		GetWgLabeling().PublishableImpliesCorruption(s1, c7T, label.Readers(set[p.Id]{ aSessId, bId }))
+		GetWgLabeling().PublishableImpliesCorruption(s2, c7T, label.Readers(set[p.Id]{ aSessId, bId }))
 	}
 	// corruption of {aId, bId} covers corruption of { aSessId, bId }
-	ghost if tr.containsCorruptId(s1.getCorruptIds(), set[p.Id]{ aSessId, bId }) {
+	ghost if tr.containsCorruptId(s2.getCorruptIds(), set[p.Id]{ aSessId, bId }) {
 		GetWgLabeling().PrincipalsIncludeSessions(aSessId, bId)
-		GetWgLabeling().containsCorruptIdMonotonic(s1.getCorruptIds(), set[p.Id]{ aSessId, bId }, set[p.Id]{ aId, bId })
+		GetWgLabeling().containsCorruptIdMonotonic(s2.getCorruptIds(), set[p.Id]{ aSessId, bId }, set[p.Id]{ aId, bId })
 	}
-	fold GetWgContext().eventInv(aSessId.getPrincipal(), sendFirstInitEv, s1)
+	fold GetWgContext().eventInv(aSessId.getPrincipal(), sendFirstInitEv, s2)
 	unfold InitiatorMem(initiator)
 	initiator.llib.TriggerEvent(sendFirstInitEv)
-	s2 := initiator.llib.Snapshot()
-	s0.isSuffixTransitive(s1, s2)
+	s3 := initiator.llib.Snapshot()
+	s0.isSuffixTransitive(s2, s3)
 	initiator.llib.ApplyMonotonicity()
 	fold InitiatorMem(initiator)
 
 	// we could prove an even stronger version of forward secrecy but by using `SentFirstInit` as
 	// a marker we have to allow corruption of B's long term key up until now:
-	corrupted = GetWgLabeling().IsPublishable(s2, kirT)
+	corrupted = GetWgLabeling().IsPublishable(s3, kirT)
 	initiator.proveSecurityProperties(ekiT, epkRX, ekRX, kirT, kriT, bSess, corrupted)
 	@*/
 	return
@@ -115,8 +118,8 @@ func (initiator *Initiator) runHandshake( /*@ ghost pskT tm.Term, ghost ltkT tm.
 //@ requires getPsk(initiator) == tm.gamma(pskT)
 //@ requires getKI(initiator) == tm.gamma(ltkT)
 //@ requires getPkR(initiator) == tm.gamma(ltpkT)
-//@ requires GetWgLabeling().IsSecretKey(initiator.Snapshot(), initiator.getAId(), ltkT, labeling.KeyTypeDHPk(), WgKey)
-//@ requires GetWgLabeling().IsPublicKeyExistential(initiator.Snapshot(), initiator.getBId(), ltpkT, labeling.KeyTypeDHPk(), WgKey)
+//@ requires GetWgLabeling().IsSecretKey(initiator.Snapshot(), initiator.getAId(), ltkT, labeling.KeyTypeDh(), WgKey)
+//@ requires GetWgLabeling().IsPublicKeyExistential(initiator.Snapshot(), initiator.getBId(), ltpkT, labeling.KeyTypeDh(), WgKey)
 //@ ensures  InitiatorMem(initiator)
 //@ ensures  initiator.ImmutableState() == old(initiator.ImmutableState())
 //@ ensures  old(initiator.Snapshot()).isSuffix(initiator.Snapshot())
@@ -129,7 +132,7 @@ func (initiator *Initiator) runHandshake( /*@ ghost pskT tm.Term, ghost ltkT tm.
 //@ ensures  ok ==> GetWgLabeling().NonceForEventIsUnique(ekiT, SendFirstInit)
 //@ ensures  ok ==> getNKey(hs) == tm.gamma(c3T)
 //@ ensures  ok ==> getNHash(hs) == tm.gamma(h4T)
-//@ ensures  ok ==> GetWgLabeling().IsSecretKey(initiator.Snapshot(), initiator.getASessId(), ekiT, labeling.KeyTypeDHPk(), WgEphemeralSk)
+//@ ensures  ok ==> GetWgLabeling().IsSecretKey(initiator.Snapshot(), initiator.getASessId(), ekiT, labeling.KeyTypeDh(), WgEphemeralSk)
 //@ ensures  ok ==> c3Props(initiator.Snapshot(), ekiT, c3T, initiator.getASessId(), initiator.getBId())
 //@ ensures  ok ==> h4Props(initiator.Snapshot(), h4T, ltkT, ltpkT, ekiT)
 //@ ensures  ok ==> sidIEventProps(initiator.Snapshot(), ekiT, initiator.getASessId(), initiator.getBId())
@@ -163,7 +166,7 @@ func (initiator *Initiator) sendRequest(hs *lib.Handshake /*@, ghost pskT tm.Ter
 	//@ epkiT := tm.exp(tm.generator(), ekiT)
 	//@ sendSidIEv := sendSidIEv(ekiT, epkiT, aSessId, bId)
 	// the following assert stmt is necessary to fold `eventInv`:
-	//@ assert GetWgLabeling().IsPublicKey(s1, p.sessionId(aSessId.getPrincipal(), p.getIdSession(aSessId)), epkiT, ekiT, labeling.KeyTypeDHPk(), WgEphemeralSk)
+	//@ assert GetWgLabeling().IsPublicKey(s1, p.sessionId(aSessId.getPrincipal(), p.getIdSession(aSessId)), epkiT, ekiT, labeling.KeyTypeDh(), WgEphemeralSk)
 	//@ fold GetWgContext().eventInv(aSessId.getPrincipal(), sendSidIEv, s1)
 	//@ unfold InitiatorMem(initiator)
 	//@ initiator.llib.TriggerEvent(sendSidIEv)
@@ -210,9 +213,9 @@ func (initiator *Initiator) sendRequest(hs *lib.Handshake /*@, ghost pskT tm.Ter
 //@ requires getPkR(initiator) == tm.gamma(ltpkT)
 //@ requires labeledlib.Abs(newPk) == tm.gamma(ekiT)
 //@ requires labeledlib.Abs(newTs) == tm.gamma(tsT)
-//@ requires GetWgLabeling().IsSecretKey(initiator.Snapshot(), initiator.getAId(), ltkT, labeling.KeyTypeDHPk(), WgKey)
-//@ requires GetWgLabeling().IsPublicKeyExistential(initiator.Snapshot(), initiator.getBId(), ltpkT, labeling.KeyTypeDHPk(), WgKey)
-//@ requires GetWgLabeling().IsSecretKey(initiator.Snapshot(), initiator.getASessId(), ekiT, labeling.KeyTypeDHPk(), WgEphemeralSk)
+//@ requires GetWgLabeling().IsSecretKey(initiator.Snapshot(), initiator.getAId(), ltkT, labeling.KeyTypeDh(), WgKey)
+//@ requires GetWgLabeling().IsPublicKeyExistential(initiator.Snapshot(), initiator.getBId(), ltpkT, labeling.KeyTypeDh(), WgKey)
+//@ requires GetWgLabeling().IsSecretKey(initiator.Snapshot(), initiator.getASessId(), ekiT, labeling.KeyTypeDh(), WgEphemeralSk)
 //@ requires GetWgLabeling().IsLabeled(initiator.Snapshot(), tsT, label.Public()) // can this be relaxed?
 //@ requires sidIEventProps(initiator.Snapshot(), ekiT, initiator.getASessId(), initiator.getBId())
 //@ ensures  InitiatorMem(initiator)
@@ -369,41 +372,44 @@ func (initiator *Initiator) createRequest(hs *lib.Handshake, newPk, newTs lib.By
 //@ requires getNKey(hs) == tm.gamma(c3T)
 //@ requires getNHash(hs) == tm.gamma(h4T)
 //@ requires GetWgLabeling().IsLabeled(initiator.Snapshot(), pskT, label.Public())
-//@ requires GetWgLabeling().IsSecretKey(initiator.Snapshot(), initiator.getAId(), ltkT, labeling.KeyTypeDHPk(), WgKey)
-//@ requires GetWgLabeling().IsPublicKeyExistential(initiator.Snapshot(), initiator.getBId(), ltpkT, labeling.KeyTypeDHPk(), WgKey)
-//@ requires GetWgLabeling().IsSecretKey(initiator.Snapshot(), initiator.getASessId(), ekiT, labeling.KeyTypeDHPk(), WgEphemeralSk)
+//@ requires GetWgLabeling().IsSecretKey(initiator.Snapshot(), initiator.getAId(), ltkT, labeling.KeyTypeDh(), WgKey)
+//@ requires GetWgLabeling().IsPublicKeyExistential(initiator.Snapshot(), initiator.getBId(), ltpkT, labeling.KeyTypeDh(), WgKey)
+//@ requires GetWgLabeling().IsSecretKey(initiator.Snapshot(), initiator.getASessId(), ekiT, labeling.KeyTypeDh(), WgEphemeralSk)
 //@ requires c3Props(initiator.Snapshot(), ekiT, c3T, initiator.getASessId(), initiator.getBId())
 //@ requires h4Props(initiator.Snapshot(), h4T, ltkT, ltpkT, ekiT)
 //@ ensures  InitiatorMem(initiator) && HandshakeMem(hs)
 //@ ensures  initiator.ImmutableState() == old(initiator.ImmutableState())
-//@ ensures  old(initiator.Snapshot()) == initiator.Snapshot()
+//@ ensures  old(initiator.Snapshot()).isSuffix(initiator.Snapshot())
 //@ ensures  getEkI(hs) == old(getEkI(hs))
 //@ ensures  ok ==> epkRXProps(initiator.Snapshot(), epkRX, initiator.getBSessId(bSess), corrupted)
 //@ ensures  ok ==> getNKey(hs) == tm.gamma(c7T)
 //@ ensures  ok ==> c7T == Term_c7(ltkT, pskT, ekiT, c3T, epkRX)
 //@ ensures  ok ==> GetWgLabeling().IsSecretRelaxed(initiator.Snapshot(), c7T, label.Readers(set[p.Id]{ initiator.getASessId(), initiator.getBId() }), u.KdfKey(WgChaininigKey))
 //@ ensures  ok ==> (corrupted == GetWgLabeling().IsPublishable(initiator.Snapshot(), c7T))
-//@ ensures  ok && !corrupted ==> GetWgLabeling().IsPublicKey(initiator.Snapshot(), initiator.getBSessId(bSess), epkRX, ekRX, labeling.KeyTypeDHPk(), WgEphemeralSk)
+//@ ensures  ok && !corrupted ==> GetWgLabeling().IsPublicKey(initiator.Snapshot(), initiator.getBSessId(bSess), epkRX, ekRX, labeling.KeyTypeDh(), WgEphemeralSk)
 //@ ensures  ok && !corrupted ==> (GetWgLabeling().GetLabel(c7T) == Label_c7(initiator.getASessId(), initiator.getBSessId(bSess)) &&
 //@		GetWgLabeling().IsSecretPrecise(initiator.Snapshot(), c7T, label.Join(label.Readers(set[p.Id]{ initiator.getBSessId(bSess) }), label.Readers(set[p.Id]{ initiator.getASessId() })), u.KdfKey(WgChaininigKey)) &&
 //@		sidREventProps(initiator.Snapshot(), pskT, ltkT, ekiT, c3T, ekRX, initiator.getASessId(), initiator.getBSessId(bSess)))
 func (initiator *Initiator) receiveResponse(hs *lib.Handshake /*@, ghost pskT tm.Term, ghost ltkT tm.Term, ghost ltpkT tm.Term, ghost ekiT tm.Term, ghost c3T tm.Term, ghost h4T tm.Term @*/) (ok bool /*@, ghost corrupted bool, ghost bSess uint32, ghost epkRX tm.Term, ghost ekRX tm.Term, ghost c7T tm.Term @*/) {
 
+	//@ s0 := initiator.Snapshot()
 	//@ aId := initiator.getAId()
 	//@ aSessId := initiator.getASessId()
-	//@ snapshot := initiator.Snapshot()
-	//@ unfold acc(InitiatorMem(initiator), 1/4)
-	packet, err /*@, term @*/ := initiator.LibState.Receive(lib.Principal(initiator.b), lib.Principal(initiator.a) /*@, initiator.llib.Snapshot() @*/ )
+	//@ unfold InitiatorMem(initiator)
+	packet, err /*@, term @*/ := initiator.llib.Receive(lib.Principal(initiator.b), lib.Principal(initiator.a))
 	ok = err == nil
-	//@ fold acc(InitiatorMem(initiator), 1/4)
+	//@ fold InitiatorMem(initiator)
 	if !ok {
 		return
 	}
+	//@ s1 := initiator.Snapshot()
+	//@ 
 	//@ unfold InitiatorMem(initiator)
 	//@ recvB := labeledlib.Abs(packet)
 	//@ assert recvB == tm.gamma(term)
 	//@ initiator.llib.MessageOccursImpliesMessageInv(lib.Principal(initiator.b), lib.Principal(initiator.a), term)
-	//@ assert GetWgLabeling().IsPublishable(snapshot, term)
+	//@ assert GetWgLabeling().IsPublishable(s1, term)
+	//@ initiator.llib.ApplyMonotonicity()
 	//@ fold InitiatorMem(initiator)
 
 	response, ok := lib.UnmarshalResponse(packet)
@@ -421,22 +427,22 @@ func (initiator *Initiator) receiveResponse(hs *lib.Handshake /*@, ghost pskT tm
 	ghost if ok {
 		k3T := Term_k3(ltkT, pskT, ekiT, c3T, epkRX)
 		bId := initiator.getBId()
-		corrupted = GetWgLabeling().IsPublishable(snapshot, k3T)
+		corrupted = GetWgLabeling().IsPublishable(s1, k3T)
 		if !corrupted {
 			h6T := Term_h6(ltkT, pskT, ekiT, c3T, h4T, epkRX)
-			assert GetWgLabeling().usage.AeadPred(snapshot, WgK3, k3T, tm.zeroString(12), tm.zeroString(0), h6T)
+			assert GetWgLabeling().usage.AeadPred(s1, WgK3, k3T, tm.zeroString(12), tm.zeroString(0), h6T)
 			bSess, ekRX = initiator.applyCemptyPred(pskT, ltkT, ltpkT, ekiT, c3T, h4T, epkRX)
 			bSessId := initiator.getBSessId(bSess)
-			CreateK3(snapshot, ltkT, pskT, ekiT, c3T, epkRX, aSessId, bSessId)
+			CreateK3(s1, ltkT, pskT, ekiT, c3T, epkRX, aSessId, bSessId)
 			bothSessL := label.Readers(set[p.Id]{ aSessId, bSessId })
-			assert GetWgLabeling().IsPublicDhPkExistential(snapshot, bSessId, epkRX, WgEphemeralSk)
+			assert GetWgLabeling().IsPublicDhKeyExistential(s1, bSessId, epkRX, WgEphemeralSk)
 		} else {
 			// we are in a state where b's session does not matter anyway
 			// thus, we simply use bId instead of bSessId here
-			CreateK3(snapshot, ltkT, pskT, ekiT, c3T, epkRX, aSessId, bId)
+			CreateK3(s1, ltkT, pskT, ekiT, c3T, epkRX, aSessId, bId)
 		}
 		bSessId := initiator.getBSessId(bSess)
-		c7T = CreateC7(snapshot, ltkT, pskT, ekiT, c3T, epkRX, aSessId, bSessId)
+		c7T = CreateC7(s1, ltkT, pskT, ekiT, c3T, epkRX, aSessId, bSessId)
 	}
 	@*/
 	return
@@ -446,9 +452,9 @@ func (initiator *Initiator) receiveResponse(hs *lib.Handshake /*@, ghost pskT tm
 ghost
 requires InitiatorMem(initiator)
 requires GetWgLabeling().IsLabeled(initiator.Snapshot(), pskT, label.Public())
-requires GetWgLabeling().IsSecretKey(initiator.Snapshot(), initiator.getAId(), ltkT, labeling.KeyTypeDHPk(), WgKey)
-requires GetWgLabeling().IsPublicKeyExistential(initiator.Snapshot(), initiator.getBId(), ltpkT, labeling.KeyTypeDHPk(), WgKey)
-requires GetWgLabeling().IsSecretKey(initiator.Snapshot(), initiator.getASessId(), ekiT, labeling.KeyTypeDHPk(), WgEphemeralSk)
+requires GetWgLabeling().IsSecretKey(initiator.Snapshot(), initiator.getAId(), ltkT, labeling.KeyTypeDh(), WgKey)
+requires GetWgLabeling().IsPublicKeyExistential(initiator.Snapshot(), initiator.getBId(), ltpkT, labeling.KeyTypeDh(), WgKey)
+requires GetWgLabeling().IsSecretKey(initiator.Snapshot(), initiator.getASessId(), ekiT, labeling.KeyTypeDh(), WgEphemeralSk)
 requires c3Props(initiator.Snapshot(), ekiT, c3T, initiator.getASessId(), initiator.getBId())
 requires h4Props(initiator.Snapshot(), h4T, ltkT, ltpkT, ekiT)
 requires GetWgLabeling().IsPublishable(initiator.Snapshot(), epkRX)
@@ -456,7 +462,7 @@ requires GetWgUsage().cemptyPred(initiator.Snapshot(), Term_k3(ltkT, pskT, ekiT,
 ensures  InitiatorMem(initiator)
 ensures  initiator.ImmutableState() == old(initiator.ImmutableState())
 ensures  old(initiator.Snapshot()) == initiator.Snapshot()
-ensures  GetWgLabeling().IsPublicKey(initiator.Snapshot(), initiator.getBSessId(bSess), epkRX, ekR, labeling.KeyTypeDHPk(), WgEphemeralSk)
+ensures  GetWgLabeling().IsPublicKey(initiator.Snapshot(), initiator.getBSessId(bSess), epkRX, ekR, labeling.KeyTypeDh(), WgEphemeralSk)
 ensures  sidREventProps(initiator.Snapshot(), pskT, ltkT, ekiT, c3T, ekR, initiator.getASessId(), initiator.getBSessId(bSess))
 func (initiator *Initiator) applyCemptyPred(pskT, ltkT, ltpkT, ekiT, c3T, h4T, epkRX tm.Term) (ghost bSess uint32, ekR tm.Term) {
 	usageCtx := GetWgUsage()
@@ -496,7 +502,7 @@ func (initiator *Initiator) applyCemptyPred(pskT, ltkT, ltpkT, ekiT, c3T, h4T, e
 		snapshot.eventOccurs(bId.getPrincipal(), ev.NewEvent(SendSidR, SendSidRParams{ aId.getPrincipal(), bId.getPrincipal(), bSess, epkiT, ekR, kirT, kriT }))
 	bSessId := initiator.getBSessId(bSess)
 	sendSidREvent := ev.NewEvent(SendSidR, SendSidRParams{ aId.getPrincipal(), bId.getPrincipal(), bSess, epkiT, ekR, kirT, kriT })
-	// apply event inv to get the info that IsPublicDhPkExistential
+	// apply event inv to get the info that IsPublicDhKeyExistential
 	unfold InitiatorMem(initiator)
 	initiator.llib.EventOccursImpliesEventInv(bId.getPrincipal(), sendSidREvent)
 	fold InitiatorMem(initiator)
@@ -521,8 +527,8 @@ pure func sidREventProps(snapshot tr.TraceEntry, pskT, ltkT, ekI, c3T, ekR tm.Te
 //@ requires getNHash(hs) == tm.gamma(h4T)
 //@ requires GetWgLabeling().IsPublishable(initiator.Snapshot(), respT)
 //@ requires GetWgLabeling().IsLabeled(initiator.Snapshot(), pskT, label.Public())
-//@ requires GetWgLabeling().IsSecretKey(initiator.Snapshot(), initiator.getAId(), ltkT, labeling.KeyTypeDHPk(), WgKey)
-//@ requires GetWgLabeling().IsSecretKey(initiator.Snapshot(), initiator.getASessId(), ekiT, labeling.KeyTypeDHPk(), WgEphemeralSk)
+//@ requires GetWgLabeling().IsSecretKey(initiator.Snapshot(), initiator.getAId(), ltkT, labeling.KeyTypeDh(), WgKey)
+//@ requires GetWgLabeling().IsSecretKey(initiator.Snapshot(), initiator.getASessId(), ekiT, labeling.KeyTypeDh(), WgEphemeralSk)
 //@ requires c3Props(initiator.Snapshot(), ekiT, c3T, initiator.getASessId(), initiator.getBId())
 //@ requires h4Props(initiator.Snapshot(), h4T, ltkT, ltpkT, ekiT)
 //@ ensures  InitiatorMem(initiator) && HandshakeMem(hs)

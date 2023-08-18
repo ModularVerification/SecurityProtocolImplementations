@@ -66,10 +66,10 @@ pure func (responder *Responder) transportKeysLabelingWithSnapBeforeRecvFirstMsg
         kriT == tm.kdf2(tm.getInput(kirT)) &&
         GetWgUsage().getEpkIFromKir(kirT) == epkIX &&
         GetWgUsage().getEpkRFromKir(kirT) == tm.exp(tm.generator(), ekrT) &&
-        GetWgLabeling().IsSecretKey(getSentSidRPrefix(snap, epkIX, ekrT, kirT, kriT, responder.getASessId(aSess), responder.getBSessId()), responder.getBSessId(), ekrT, labeling.KeyTypeDHPk(), WgEphemeralSk) &&
+        GetWgLabeling().IsSecretKey(getSentSidRPrefix(snap, epkIX, ekrT, kirT, kriT, responder.getASessId(aSess), responder.getBSessId()), responder.getBSessId(), ekrT, labeling.KeyTypeDh(), WgEphemeralSk) &&
         GetWgLabeling().IsLabeled(snap, GetWgUsage().getDhStaticFromKir(kirT), Label_DhStatic(responder.getAId(), responder.getBId())) &&
         GetWgLabeling().IsLabeled(snap, GetWgUsage().getDhStaticEphemeral(kirT), Label_DhStaticEphemeral(responder.getAId(), responder.getBSessId())) &&
-        (corrupted == !GetWgLabeling().IsPublicKeyExistential(getSentSidRPrefix(snap, epkIX, ekrT, kirT, kriT, responder.getASessId(aSess), responder.getBSessId()), responder.getASessId(aSess), epkIX, labeling.KeyTypeDHPk(), WgEphemeralSk)) &&
+        (corrupted == !GetWgLabeling().IsPublicKeyExistential(getSentSidRPrefix(snap, epkIX, ekrT, kirT, kriT, responder.getASessId(aSess), responder.getBSessId()), responder.getASessId(aSess), epkIX, labeling.KeyTypeDh(), WgEphemeralSk)) &&
         (corrupted ==> tr.containsCorruptId(getSentSidRPrefix(snap, epkIX, ekrT, kirT, kriT, responder.getASessId(aSess), responder.getBSessId()).getCorruptIds(), set[p.Id]{ responder.getAId(), responder.getBId() })) &&
         (!corrupted ==> (
             // the following snapshots can be relaxed to be "snap" instead of "prefix":
@@ -103,6 +103,41 @@ pure func (responder *Responder) transportKeysLabelingWithSnapAfterRecvFirstMsg(
 ghost
 requires ResponderMem(responder)
 requires oldSnap.isSuffix(responder.Snapshot())
+requires responder.transportKeysLabelingWithSnapBeforeRecvFirstMsg(oldSnap, epkIX, ekrT, kirT, kriT, aSess, corrupted)
+ensures  ResponderMem(responder)
+ensures  responder.ImmutableState() == old(responder.ImmutableState())
+ensures  old(responder.Snapshot()) == responder.Snapshot()
+ensures  responder.transportKeysLabelingBeforeRecvFirstMsg(epkIX, ekrT, kirT, kriT, aSess, corrupted)
+func (responder *Responder) transportKeysLabelingBeforeRecvFirstMsgMonotonic(oldSnap tr.TraceEntry, epkIX, ekrT, kirT, kriT tm.Term, aSess uint32, corrupted bool) {
+    curSnap := responder.Snapshot()
+    aId := responder.getAId()
+    aSessId := responder.getASessId(aSess)
+    bId := responder.getBId()
+    bSessId := responder.getBSessId()
+    aBSessL := label.Readers(set[p.Id]{ aId, bSessId })
+    aSessBSessL := label.Readers(set[p.Id]{ aSessId, bSessId })
+    GetWgLabeling().IsSecretRelaxedMonotonic(oldSnap, curSnap, kirT, aBSessL, u.AeadKey(WgReceivingKey))
+    GetWgLabeling().IsSecretRelaxedMonotonic(oldSnap, curSnap, kriT, aBSessL, u.AeadKey(WgSendingKey))
+    oldSnap.eventOccursMonotonic(curSnap, bSessId.getPrincipal(), sendSidREv(epkIX, ekrT, kirT, kriT, aSessId, bSessId))
+    assert sentSidR(curSnap, epkIX, ekrT, kirT, kriT, responder.getASessId(aSess), responder.getBSessId())
+    oldPrefix := getSentSidRPrefix(oldSnap, epkIX, ekrT, kirT, kriT, aSessId, bSessId)
+    newPrefix := getSentSidRPrefix(curSnap, epkIX, ekrT, kirT, kriT, aSessId, bSessId)
+    // the following lemma call derives that `oldPrefix.isSuffix(newPrefix)` holds:
+    getSentSidRPrefixTwice(oldSnap, curSnap, epkIX, ekrT, kirT, kriT, aSessId, bSessId)
+    if oldPrefix != newPrefix {
+        // derive a contradiction here because the event is unique, thus oldPrefix == newPrefix
+        unfold ResponderMem(responder)
+        event := sendSidREv(epkIX, ekrT, kirT, kriT, aSessId, bSessId)
+        responder.llib.UniqueEventIsUnique(bId.getPrincipal(), event)
+        assert false // contradiction as expected
+    }
+    GetWgLabeling().IsLabeledMonotonic(oldSnap, curSnap, GetWgUsage().getDhStaticFromKir(kirT), Label_DhStatic(aId, bId))
+    GetWgLabeling().IsLabeledMonotonic(oldSnap, curSnap, GetWgUsage().getDhStaticEphemeral(kirT), Label_DhStaticEphemeral(aId, bSessId))
+}
+
+ghost
+requires ResponderMem(responder)
+requires oldSnap.isSuffix(responder.Snapshot())
 requires responder.transportKeysLabelingWithSnapAfterRecvFirstMsg(oldSnap, ekiT, epkIX, ekrT, kirT, kriT, aSess, corrupted)
 ensures  ResponderMem(responder)
 ensures  responder.ImmutableState() == old(responder.ImmutableState())
@@ -126,6 +161,7 @@ func (responder *Responder) transportKeysLabelingAfterRecvFirstMsgMonotonic(oldS
         unfold ResponderMem(responder)
         event := receivedFirstRespEv(ekiT, ekrT, kirT, kriT, aSessId, bSessId)
         responder.llib.UniqueEventIsUnique(bId.getPrincipal(), event)
+        assert false // contradiction as expected
     }
     GetWgLabeling().IsSecretRelaxedMonotonic(oldSnap, curSnap, kirT, aBSessL, u.AeadKey(WgReceivingKey))
     GetWgLabeling().IsSecretRelaxedMonotonic(oldSnap, curSnap, kriT, aBSessL, u.AeadKey(WgSendingKey))
@@ -271,6 +307,26 @@ pure func getSentSidRPrefix(snapshot tr.TraceEntry, epkIX, ekrT, kirT, kriT tm.T
 }
 
 ghost
+requires t0.isSuffix(t1)
+requires aSessId.getSession() != none[uint32]
+requires bSessId.getSession() != none[uint32]
+requires sentSidR(t0, epkIX, ekrT, kirT, kriT, aSessId, bSessId)
+ensures  sentSidR(t1, epkIX, ekrT, kirT, kriT, aSessId, bSessId)
+ensures  getSentSidRPrefix(t0, epkIX, ekrT, kirT, kriT, aSessId, bSessId).isSuffix(getSentSidRPrefix(t1, epkIX, ekrT, kirT, kriT, aSessId, bSessId))
+/** lemma stating that the results of `getSentSidRPrefix` for two snapshots t0, t1 maintains the suffix relation */
+func getSentSidRPrefixTwice(t0, t1 tr.TraceEntry, epkIX, ekrT, kirT, kriT tm.Term, aSessId, bSessId p.Id) {
+    t0.eventOccursMonotonic(t1, bSessId.getPrincipal(), sendSidREv(epkIX, ekrT, kirT, kriT, aSessId, bSessId))
+    if t0 != t1 {
+        if t1.isEventAt(bSessId.getPrincipal(), sendSidREv(epkIX, ekrT, kirT, kriT, aSessId, bSessId)) {
+            t0Res := getSentSidRPrefix(t0, epkIX, ekrT, kirT, kriT, aSessId, bSessId)
+            t0Res.isSuffixTransitive(t0, t1)
+        } else {
+            getSentSidRPrefixTwice(t0, tr.getPrev(t1), epkIX, ekrT, kirT, kriT, aSessId, bSessId)
+        }
+    }
+}
+
+ghost
 requires aSessId.getSession() != none[uint32]
 requires bSessId.getSession() != none[uint32]
 pure func sentFirstMsgEv(ekiT, epkIX, ekrT, kirT, kriT tm.Term, aSessId, bSessId p.Id) ev.Event {
@@ -346,13 +402,13 @@ func getRecvFirstTransportMsgTwice(t0, t1 tr.TraceEntry, ekiT, epkIX, ekrT, kirT
 ghost
 requires acc(ResponderMem(responder), _)
 pure func (responder *Responder) NonInjectiveAgreementWithKCIResistance(aSessId, bSessId p.Id, commit, running ev.Event) bool {
-    return unfolding ResponderMem(responder) in responder.llib.NonInjectiveAgreement(bSessId.getPrincipal(), aSessId.getPrincipal(), commit, running, set[p.Id]{ aSessId.getPrincipalId(), bSessId })
+    return unfolding acc(ResponderMem(responder), _) in responder.llib.NonInjectiveAgreement(bSessId.getPrincipal(), aSessId.getPrincipal(), commit, running, set[p.Id]{ aSessId.getPrincipalId(), bSessId })
 }
 
 ghost
 requires acc(ResponderMem(responder), _)
 pure func (responder *Responder) InjectiveAgreementWithKCIResistance(aSessId, bSessId p.Id, commit, running ev.Event) bool {
-    return unfolding ResponderMem(responder) in responder.llib.InjectiveAgreement(bSessId.getPrincipal(), aSessId.getPrincipal(), commit, running, set[p.Id]{ aSessId.getPrincipalId(), bSessId })
+    return unfolding acc(ResponderMem(responder), _) in responder.llib.InjectiveAgreement(bSessId.getPrincipal(), aSessId.getPrincipal(), commit, running, set[p.Id]{ aSessId.getPrincipalId(), bSessId })
 }
 
 ghost

@@ -30,7 +30,7 @@ import (
 //@ ensures  llib.ImmutableState() == old(llib.ImmutableState())
 //@ ensures  llib.Snapshot() == old(llib.Snapshot())
 //@ ensures  ok ==> lib.Abs(b1) == gamma(skT)
-//@ ensures  ok ==> common.GetWgLabeling().IsSecretKey(llib.Snapshot(), principalId(own), skT, labeling.KeyTypeDHPk(), common.WgKey)
+//@ ensures  ok ==> common.GetWgLabeling().IsSecretKey(llib.Snapshot(), principalId(own), skT, labeling.KeyTypeDh(), common.WgKey)
 func (libState *LibraryState) GetLtKBio(own uint32 /*@, ghost llib *ll.LabeledLibrary @*/) (ok bool, b1 lib.ByteString /*@, ghost skT Term @*/) {
 	ok = true
 	b1 = libState.dev.StaticIdentity.PrivateKey[:]
@@ -45,7 +45,7 @@ func (libState *LibraryState) GetLtKBio(own uint32 /*@, ghost llib *ll.LabeledLi
 //@ ensures  llib.ImmutableState() == old(llib.ImmutableState())
 //@ ensures  llib.Snapshot() == old(llib.Snapshot())
 //@ ensures  ok ==> lib.Abs(b1) == gamma(ltpkT)
-//@ ensures  ok ==> common.GetWgLabeling().IsPublicKeyExistential(llib.Snapshot(), principalId(other), ltpkT, labeling.KeyTypeDHPk(), common.WgKey)
+//@ ensures  ok ==> common.GetWgLabeling().IsPublicKeyExistential(llib.Snapshot(), principalId(other), ltpkT, labeling.KeyTypeDh(), common.WgKey)
 func (libState *LibraryState) GetLtpKBio(other uint32 /*@, ghost llib *ll.LabeledLibrary @*/) (ok bool, b1 lib.ByteString /*@, ghost ltpkT Term @*/) {
 	ok = true
 	b1 = libState.dev.Peer.Handshake.RemoteStatic[:]

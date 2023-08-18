@@ -27,9 +27,9 @@ import lib "github.com/ModularVerification/casestudies/wireguard/library"
 //@ requires getKR(responder) == tm.gamma(ltkT)
 //@ requires getPkI(responder) == tm.gamma(ltpkT)
 //@ requires GetWgLabeling().IsLabeled(responder.Snapshot(), pskT, label.Public())
-//@ requires GetWgLabeling().IsSecretKey(responder.Snapshot(), responder.getBId(), ltkT, labeling.KeyTypeDHPk(), WgKey)
+//@ requires GetWgLabeling().IsSecretKey(responder.Snapshot(), responder.getBId(), ltkT, labeling.KeyTypeDh(), WgKey)
 //@ requires ltkT.IsRandom()
-//@ requires GetWgLabeling().IsPublicKeyExistential(responder.Snapshot(), responder.getAId(), ltpkT, labeling.KeyTypeDHPk(), WgKey)
+//@ requires GetWgLabeling().IsPublicKeyExistential(responder.Snapshot(), responder.getAId(), ltpkT, labeling.KeyTypeDh(), WgKey)
 //@ ensures  ResponderMem(responder)
 //@ ensures  ok ==> lib.ConnectionMem(conn) && lib.ConnectionNonceVal(conn) == 0
 //@ ensures  ok ==> lib.ConnectionRecvKey(conn) == tm.gamma(kirT)
@@ -46,9 +46,11 @@ func (responder *Responder) runHandshake( /*@ ghost pskT tm.Term, ghost ltkT tm.
 		return
 	}
 
-	//@ unfold acc(ResponderMem(responder), 1/4)
+	//@ unfold ResponderMem(responder)
+	//@ responder.llib.ApplyMonotonicity()
+	//@ fold acc(ResponderMem(responder), 1/2)
 	(responder.LibState).Println("Success Consuming Request")
-	//@ fold acc(ResponderMem(responder), 1/4)
+	//@ fold acc(ResponderMem(responder), 1/2)
 	ok /*@, ekrT, kirT, kriT @*/ = responder.sendResponse(handshake /*@, corrupted, pskT, ltkT, ltpkT, sidIX, epkIX, c3T, h4T, aSess @*/)
 	if !ok {
 		return
@@ -86,7 +88,7 @@ requires sentSidR(responder.Snapshot(), epkIX, ekrT, kirT, kriT, responder.getAS
 requires prefix == getSentSidRPrefix(responder.Snapshot(), epkIX, ekrT, kirT, kriT, responder.getASessId(aSess), responder.getBSessId())
 requires GetWgLabeling().IsLabeled(prefix, pskT, label.Public())
 requires c3PropsCombined(prefix, ltkT, ltpkT, epkIX, c3T, responder.getASessId(aSess), responder.getBId())
-requires GetWgLabeling().IsSecretKey(prefix, responder.getBSessId(), ekrT, labeling.KeyTypeDHPk(), WgEphemeralSk)
+requires GetWgLabeling().IsSecretKey(prefix, responder.getBSessId(), ekrT, labeling.KeyTypeDh(), WgEphemeralSk)
 requires kirT == Term_k_IR(ltpkT, pskT, epkIX, c3T, ekrT)
 requires kriT == Term_k_RI(ltpkT, pskT, epkIX, c3T, ekrT)
 requires !GetWgLabeling().IsPublishable(prefix, Term_k2(ltkT, ltpkT, epkIX)) ==> sidIEventProps(prefix, epkIX, responder.getASessId(aSess), responder.getBId())
@@ -99,7 +101,7 @@ func (responder *Responder) establishTransportKeyLabeling(prefix tr.TraceEntry, 
 	bSessId := responder.getBSessId()
 	bothL := label.Readers(set[p.Id]{ aId, bId })
 
-	newCorrupted = !GetWgLabeling().IsPublicKeyExistential(prefix, aSessId, epkIX, labeling.KeyTypeDHPk(), WgEphemeralSk)
+	newCorrupted = !GetWgLabeling().IsPublicKeyExistential(prefix, aSessId, epkIX, labeling.KeyTypeDh(), WgEphemeralSk)
 
 	k2T := CreateK2(prefix, ltkT, ltpkT, epkIX, aSessId, bId)
 	if GetWgLabeling().IsPublishable(prefix, k2T) {
@@ -134,12 +136,12 @@ func (responder *Responder) establishTransportKeyLabeling(prefix tr.TraceEntry, 
 //@ requires getKR(responder) == tm.gamma(ltkT)
 //@ requires getPkI(responder) == tm.gamma(ltpkT)
 //@ requires GetWgLabeling().IsLabeled(responder.Snapshot(), pskT, label.Public())
-//@ requires GetWgLabeling().IsSecretKey(responder.Snapshot(), responder.getBId(), ltkT, labeling.KeyTypeDHPk(), WgKey)
+//@ requires GetWgLabeling().IsSecretKey(responder.Snapshot(), responder.getBId(), ltkT, labeling.KeyTypeDh(), WgKey)
 //@ requires ltkT.IsRandom()
-//@ requires GetWgLabeling().IsPublicKeyExistential(responder.Snapshot(), responder.getAId(), ltpkT, labeling.KeyTypeDHPk(), WgKey)
+//@ requires GetWgLabeling().IsPublicKeyExistential(responder.Snapshot(), responder.getAId(), ltpkT, labeling.KeyTypeDh(), WgKey)
 //@ ensures  ResponderMem(responder)
 //@ ensures  responder.ImmutableState() == old(responder.ImmutableState())
-//@ ensures  old(responder.Snapshot()) == responder.Snapshot()
+//@ ensures  old(responder.Snapshot()).isSuffix(responder.Snapshot())
 //@ ensures  getPsk(responder) == tm.gamma(pskT)
 //@ ensures  getKR(responder) == tm.gamma(ltkT)
 //@ ensures  getPkI(responder) == tm.gamma(ltpkT)
@@ -158,12 +160,12 @@ func (responder *Responder) receiveRequest(hs *lib.Handshake /*@, ghost pskT tm.
 
 	//@ aId := responder.getAId()
 	//@ bId := responder.getBId()
-	//@ snapshot := responder.Snapshot()
 	
-	//@ unfold acc(ResponderMem(responder), 1/4)
-	packet, err /*@, term @*/ := responder.LibState.Receive(lib.Principal(responder.a), lib.Principal(responder.b) /*@, responder.llib.Snapshot() @*/)
+	//@ unfold ResponderMem(responder)
+	packet, err /*@, term @*/ := responder.llib.Receive(lib.Principal(responder.a), lib.Principal(responder.b))
 	ok = err == nil
-	//@ fold acc(ResponderMem(responder), 1/4)
+	//@ responder.llib.ApplyMonotonicity()
+	//@ fold ResponderMem(responder)
 	if !ok {
 		return
 	}
@@ -178,6 +180,7 @@ func (responder *Responder) receiveRequest(hs *lib.Handshake /*@, ghost pskT tm.
 	}
 
 	//@ BeforeConsume:
+	//@ snapshot := responder.Snapshot()
 	//@ ghost var ts tm.Bytes
 	//@ ghost var tsX tm.Term
 	//@ ghost var mac1X tm.Term
@@ -191,7 +194,7 @@ func (responder *Responder) receiveRequest(hs *lib.Handshake /*@, ghost pskT tm.
 			h3T := Term_h3(ltkT, ltpkT, epkIX)
 			assert GetWgLabeling().usage.AeadPred(snapshot, WgK2, k2T, tm.zeroString(12), tsX, h3T)
 			aSess = responder.applyCtsPred(ltkT, ltpkT, epkIX, tsX)
-			assert GetWgLabeling().IsPublicDhPkExistential(snapshot, responder.getASessId(aSess), epkIX, WgEphemeralSk)
+			assert GetWgLabeling().IsPublicDhKeyExistential(snapshot, responder.getASessId(aSess), epkIX, WgEphemeralSk)
 		}
 		aSessId := responder.getASessId(aSess)
 		c3T = CreateC3(snapshot, ltkT, ltpkT, epkIX, aSessId, bId)
@@ -205,8 +208,8 @@ func (responder *Responder) receiveRequest(hs *lib.Handshake /*@, ghost pskT tm.
 /*@
 ghost
 requires ResponderMem(responder)
-requires GetWgLabeling().IsSecretKey(responder.Snapshot(), responder.getBId(), ltkT, labeling.KeyTypeDHPk(), WgKey)
-requires GetWgLabeling().IsPublicKeyExistential(responder.Snapshot(), responder.getAId(), ltpkT, labeling.KeyTypeDHPk(), WgKey)
+requires GetWgLabeling().IsSecretKey(responder.Snapshot(), responder.getBId(), ltkT, labeling.KeyTypeDh(), WgKey)
+requires GetWgLabeling().IsPublicKeyExistential(responder.Snapshot(), responder.getAId(), ltpkT, labeling.KeyTypeDh(), WgKey)
 requires GetWgLabeling().IsPublishable(responder.Snapshot(), epkIX)
 requires GetWgUsage().ctsPred(responder.Snapshot(), Term_k2(ltkT, ltpkT, epkIX), tsX, Term_h3(ltkT, ltpkT, epkIX))
 ensures  ResponderMem(responder)
@@ -215,7 +218,7 @@ ensures  old(responder.Snapshot()) == responder.Snapshot()
 ensures  old(getPsk(responder)) == getPsk(responder)
 ensures  old(getKR(responder)) == getKR(responder)
 ensures  old(getPkI(responder)) == getPkI(responder)
-ensures  GetWgLabeling().IsPublicKeyExistential(responder.Snapshot(), responder.getASessId(aSess), epkIX, labeling.KeyTypeDHPk(), WgEphemeralSk)
+ensures  GetWgLabeling().IsPublicKeyExistential(responder.Snapshot(), responder.getASessId(aSess), epkIX, labeling.KeyTypeDh(), WgEphemeralSk)
 ensures  sidIEventProps(responder.Snapshot(), epkIX, responder.getASessId(aSess), responder.getBId())
 func (responder *Responder) applyCtsPred(ltkT, ltpkT, epkIX, tsX tm.Term) (ghost aSess uint32){
 	usageCtx := GetWgUsage()
@@ -241,7 +244,7 @@ func (responder *Responder) applyCtsPred(ltkT, ltpkT, epkIX, tsX tm.Term) (ghost
 	ekI := arb.GetArbTerm()
 	assume GetWgUsage().getEpkIFromH3(h3T) == tm.exp(tm.generator(), ekI) &&
 		snapshot.eventOccurs(aId.getPrincipal(), ev.NewEvent(SendSidI, SendSidIParams{ aId.getPrincipal(), bId.getPrincipal(), ekI, usageCtx.getEpkIFromH3(h3T) }))
-	// apply event inv to get the info that IsPublicDhPkExistential
+	// apply event inv to get the info that IsPublicDhKeyExistential
 	unfold ResponderMem(responder)
 	responder.llib.EventOccursImpliesEventInv(aId.getPrincipal(), ev.NewEvent(SendSidI, SendSidIParams{ aId.getPrincipal(), bId.getPrincipal(), ekI, usageCtx.getEpkIFromH3(h3T) }))
 	fold ResponderMem(responder)
@@ -249,10 +252,10 @@ func (responder *Responder) applyCtsPred(ltkT, ltpkT, epkIX, tsX tm.Term) (ghost
 	// use event invariant to derive that epkIX is a public key:
 	a := aId.getPrincipal()
 	assert GetWgContext().pureEventInv(a, ev.NewEvent(SendSidI, SendSidIParams{ a, bId.getPrincipal(), ekI, epkIX }), snapshot)
-	assert exists aSess uint32 :: { p.sessionId(a, aSess) } GetWgLabeling().IsPublicKey(snapshot, p.sessionId(a, aSess), epkIX, ekI, labeling.KeyTypeDHPk(), WgEphemeralSk)
+	assert exists aSess uint32 :: { p.sessionId(a, aSess) } GetWgLabeling().IsPublicKey(snapshot, p.sessionId(a, aSess), epkIX, ekI, labeling.KeyTypeDh(), WgEphemeralSk)
 	// get witness:
 	aSess := arb.GetArbUInt32()
-	assume GetWgLabeling().IsPublicKey(snapshot, p.sessionId(a, aSess), epkIX, ekI, labeling.KeyTypeDHPk(), WgEphemeralSk)
+	assume GetWgLabeling().IsPublicKey(snapshot, p.sessionId(a, aSess), epkIX, ekI, labeling.KeyTypeDh(), WgEphemeralSk)
 }
 @*/
 
@@ -263,8 +266,8 @@ func (responder *Responder) applyCtsPred(ltkT, ltpkT, epkIX, tsX tm.Term) (ghost
 //@ requires getPkI(responder) == tm.gamma(ltpkT)
 //@ requires GetWgLabeling().IsPublishable(responder.Snapshot(), reqT)
 //@ requires GetWgLabeling().IsLabeled(responder.Snapshot(), pskT, label.Public())
-//@ requires GetWgLabeling().IsSecretKey(responder.Snapshot(), responder.getBId(), ltkT, labeling.KeyTypeDHPk(), WgKey)
-//@ requires GetWgLabeling().IsPublicKeyExistential(responder.Snapshot(), responder.getAId(), ltpkT, labeling.KeyTypeDHPk(), WgKey)
+//@ requires GetWgLabeling().IsSecretKey(responder.Snapshot(), responder.getBId(), ltkT, labeling.KeyTypeDh(), WgKey)
+//@ requires GetWgLabeling().IsPublicKeyExistential(responder.Snapshot(), responder.getAId(), ltpkT, labeling.KeyTypeDh(), WgKey)
 //@ ensures  ResponderMem(responder)
 //@ ensures  responder.ImmutableState() == old(responder.ImmutableState())
 //@ ensures  old(responder.Snapshot()) == responder.Snapshot()
@@ -495,8 +498,8 @@ func (responder *Responder) consumeRequest(hs *lib.Handshake, request *lib.Reque
 	//@ requires tm.gamma(ltpkT) == pkI
 	//@ requires GetWgLabeling().IsPublishable(responder.Snapshot(), reqT)
 	//@ requires GetWgLabeling().IsLabeled(responder.Snapshot(), pskT, label.Public())
-	//@ requires GetWgLabeling().IsSecretKey(responder.Snapshot(), responder.getBId(), ltkT, labeling.KeyTypeDHPk(), WgKey)
-	//@ requires GetWgLabeling().IsPublicKeyExistential(responder.Snapshot(), responder.getAId(), ltpkT, labeling.KeyTypeDHPk(), WgKey)
+	//@ requires GetWgLabeling().IsSecretKey(responder.Snapshot(), responder.getBId(), ltkT, labeling.KeyTypeDh(), WgKey)
+	//@ requires GetWgLabeling().IsPublicKeyExistential(responder.Snapshot(), responder.getAId(), ltpkT, labeling.KeyTypeDh(), WgKey)
 	//@ requires reqT.IsTuple7() ==> predictedEpkIX == tm.getTupleElem(reqT, 2)
 	//@ requires reqT.IsTuple7() ==> predictedCts == tm.getTupleElem(reqT, 4)
 	//@ requires (forall msgT tm.Term :: { tm.aead(k2T, tm.zeroString(12), msgT, h3T) } predictedCts == tm.aead(k2T, tm.zeroString(12), msgT, h3T) ==>
@@ -568,8 +571,8 @@ func (responder *Responder) consumeRequest(hs *lib.Handshake, request *lib.Reque
 //@ ensures  ok ==> sentSidR(responder.Snapshot(), epkIX, ekrT, Term_k_IR(ltpkT, pskT, epkIX, c3T, ekrT), Term_k_RI(ltpkT, pskT, epkIX, c3T, ekrT), responder.getASessId(aSess), responder.getBSessId())
 //@ ensures  ok ==> old(responder.Snapshot()).isSuffix(getSentSidRPrefix(responder.Snapshot(), epkIX, ekrT, kirT, kriT, responder.getASessId(aSess), responder.getBSessId()))
 //@ ensures  ok ==> c3PropsCombined(getSentSidRPrefix(responder.Snapshot(), epkIX, ekrT, kirT, kriT, responder.getASessId(aSess), responder.getBSessId()), ltkT, ltpkT, epkIX, c3T, responder.getASessId(aSess), responder.getBId())
-//@ ensures  ok ==> GetWgLabeling().IsSecretKey(getSentSidRPrefix(responder.Snapshot(), epkIX, ekrT, kirT, kriT, responder.getASessId(aSess), responder.getBSessId()), responder.getBSessId(), ekrT, labeling.KeyTypeDHPk(), WgEphemeralSk)
-//@ ensures  ok ==> GetWgLabeling().IsSecretKey(responder.Snapshot(), responder.getBSessId(), ekrT, labeling.KeyTypeDHPk(), WgEphemeralSk)
+//@ ensures  ok ==> GetWgLabeling().IsSecretKey(getSentSidRPrefix(responder.Snapshot(), epkIX, ekrT, kirT, kriT, responder.getASessId(aSess), responder.getBSessId()), responder.getBSessId(), ekrT, labeling.KeyTypeDh(), WgEphemeralSk)
+//@ ensures  ok ==> GetWgLabeling().IsSecretKey(responder.Snapshot(), responder.getBSessId(), ekrT, labeling.KeyTypeDh(), WgEphemeralSk)
 //@ ensures  ok ==> getNKey2(hs) == tm.gamma(Term_c7(ltpkT, pskT, epkIX, c3T, ekrT))
 //@ ensures  ok ==> GetWgLabeling().NonceForEventIsUnique(ekrT, ReceivedFirstResp)
 func (responder *Responder) sendResponse(hs *lib.Handshake /*@, ghost corrupted bool, ghost pskT tm.Term, ghost ltkT tm.Term, ghost ltpkT tm.Term, ghost sidIX tm.Term, ghost epkIX tm.Term, ghost c3T tm.Term, ghost h4T tm.Term, ghost aSess uint32 @*/) (ok bool /*@, ghost ekrT tm.Term, ghost kirT tm.Term, ghost kriT tm.Term @*/) {
@@ -674,7 +677,7 @@ func (responder *Responder) sendResponse(hs *lib.Handshake /*@, ghost corrupted 
 //@ requires GetWgLabeling().IsLabeled(responder.Snapshot(), pskT, label.Public())
 //@ requires c3PropsCombined(responder.Snapshot(), ltkT, ltpkT, epkIX, c3T, responder.getASessId(aSess), responder.getBId())
 //@ requires h4Props(responder.Snapshot(), h4T, ltkT, ltpkT, epkIX)
-//@ requires GetWgLabeling().IsSecretKey(responder.Snapshot(), responder.getBSessId(), ekrT, labeling.KeyTypeDHPk(), WgEphemeralSk)
+//@ requires GetWgLabeling().IsSecretKey(responder.Snapshot(), responder.getBSessId(), ekrT, labeling.KeyTypeDh(), WgEphemeralSk)
 //@ requires sidREventProps(responder.Snapshot(), epkIX, ekrT, Term_k_IR(ltpkT, pskT, epkIX, c3T, ekrT), Term_k_RI(ltpkT, pskT, epkIX, c3T, ekrT), responder.getASessId(aSess), responder.getBSessId())
 //@ ensures  ResponderMem(responder)
 //@ ensures  responder.ImmutableState() == old(responder.ImmutableState())

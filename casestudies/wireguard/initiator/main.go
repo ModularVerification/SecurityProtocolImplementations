@@ -13,10 +13,12 @@ import lib "github.com/ModularVerification/casestudies/wireguard/library"
 
 // to retain a similar code structure, the parameters passed to the implementation (such as its secret key or the peer's public key)
 // are not directly parameters to this function but are returned by `getInitialState`
-//@ requires lib.LibMem(&initiator.LibState) && acc(&initiator.HandshakeInfo) && acc(&initiator.a) && acc(&initiator.b) && acc(&initiator.llib)
-//@ requires llib.Mem() && llib.Ctx() == GetWgContext() && llib.LabelCtx() == GetWgLabeling() && llib.Owner() == p.sessionId(lib.Principal(a), sid)
-func (initiator *Initiator) RunInitiator(sid, a, b uint32, llib *ll.LabeledLibrary) {
-	ok /*@, pskT, ltkT, ltpkT @*/ := initiator.getInitialState(sid, a, b, llib)
+//@ requires lib.LibMem(&initiator.LibState) && acc(initiator)
+//@ requires llib.Mem() && llib.Ctx() == GetWgContext() && llib.LabelCtx() == GetWgLabeling() && llib.Owner() == p.sessionThreadId(lib.Principal(a), sid, 0)
+//@ requires llib2.Mem() && llib2.Ctx() == GetWgContext() && llib2.LabelCtx() == GetWgLabeling() && llib2.Owner() == p.sessionThreadId(lib.Principal(a), sid, 1)
+//@ requires unfolding llib.Mem() in unfolding llib2.Mem() in llib.manager.ImmutableState(llib.ctx, llib.owner) == llib2.manager.ImmutableState(llib2.ctx, llib2.owner)
+func (initiator *Initiator) RunInitiator(sid, a, b uint32, llib *ll.LabeledLibrary, llib2 *ll.LabeledLibrary) {
+	ok /*@, pskT, ltkT, ltpkT @*/ := initiator.getInitialState(sid, a, b, llib, llib2)
 	if !ok {
 		return
 	}
@@ -32,17 +34,19 @@ func (initiator *Initiator) RunInitiator(sid, a, b uint32, llib *ll.LabeledLibra
 	go initiator.forwardPackets(keypair /*@, ekiT, epkRX, ekRX, kirT, kriT, bSess, corrupted @*/)
 }
 
-//@ requires lib.LibMem(&initiator.LibState) && acc(&initiator.HandshakeInfo) && acc(&initiator.a) && acc(&initiator.b) && acc(&initiator.llib)
-//@ requires llib.Mem() && llib.Ctx() == GetWgContext() && llib.LabelCtx() == GetWgLabeling() && llib.Owner() == p.sessionId(lib.Principal(a), sid)
+//@ requires lib.LibMem(&initiator.LibState) && acc(initiator)
+//@ requires llib.Mem() && llib.Ctx() == GetWgContext() && llib.LabelCtx() == GetWgLabeling() && llib.Owner() == p.sessionThreadId(lib.Principal(a), sid, 0)
+//@ requires llib2.Mem() && llib2.Ctx() == GetWgContext() && llib2.LabelCtx() == GetWgLabeling() && llib2.Owner() == p.sessionThreadId(lib.Principal(a), sid, 1)
+//@ requires unfolding llib.Mem() in unfolding llib2.Mem() in llib.manager.ImmutableState(llib.ctx, llib.owner) == llib2.manager.ImmutableState(llib2.ctx, llib2.owner)
 //@ ensures  ok ==> InitiatorMem(initiator)
 //@ ensures  ok ==> getPsk(initiator) == tm.gamma(pskT)
 //@ ensures  ok ==> getKI(initiator) == tm.gamma(ltkT)
 //@ ensures  ok ==> getPkR(initiator) == tm.gamma(ltpkT)
 //@ ensures  ok ==> GetWgLabeling().IsLabeled(initiator.Snapshot(), pskT, label.Public())
-//@ ensures  ok ==> GetWgLabeling().IsSecretKey(initiator.Snapshot(), initiator.getAId(), ltkT, labeling.KeyTypeDHPk(), WgKey)
+//@ ensures  ok ==> GetWgLabeling().IsSecretKey(initiator.Snapshot(), initiator.getAId(), ltkT, labeling.KeyTypeDh(), WgKey)
 //@ ensures  ok ==> ltkT.IsRandom()
-//@ ensures  ok ==> GetWgLabeling().IsPublicKeyExistential(initiator.Snapshot(), initiator.getBId(), ltpkT, labeling.KeyTypeDHPk(), WgKey)
-func (initiator *Initiator) getInitialState(sid, a, b uint32, llib *ll.LabeledLibrary) (ok bool /*@, ghost pskT tm.Term, ghost ltkT tm.Term, ghost ltpkT tm.Term @*/) {
+//@ ensures  ok ==> GetWgLabeling().IsPublicKeyExistential(initiator.Snapshot(), initiator.getBId(), ltpkT, labeling.KeyTypeDh(), WgKey)
+func (initiator *Initiator) getInitialState(sid, a, b uint32, llib *ll.LabeledLibrary, llib2 *ll.LabeledLibrary) (ok bool /*@, ghost pskT tm.Term, ghost ltkT tm.Term, ghost ltpkT tm.Term @*/) {
 
 	var psk lib.ByteString
 	ok, psk /*@, pskT @*/ = initiator.LibState.GetPsKBio(a, b /*@, llib @*/)
@@ -73,6 +77,7 @@ func (initiator *Initiator) getInitialState(sid, a, b uint32, llib *ll.LabeledLi
 	initiator.a = a
 	initiator.b = b
 	initiator.llib = llib
+	initiator.llib2 = llib2
 
 	//@ fold lib.HandshakeArgsMem(&initiator.HandshakeInfo)
 	//@ fold InitiatorMem(initiator)

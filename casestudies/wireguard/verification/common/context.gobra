@@ -230,10 +230,10 @@ pure func (ctx WgContext) pureEventInv(principal p.Principal, event ev.Event, pr
         (ctx.isSendSidI(event) ==>
             principal == ctx.getSendSidIParams(event).a &&
             (exists aSess uint32 :: { p.sessionId(principal, aSess) } (
-                GetWgLabeling().IsPublicKey(prev, p.sessionId(principal, aSess), ctx.getSendSidIParams(event).epkI, ctx.getSendSidIParams(event).ekI, KeyTypeDHPk(), WgEphemeralSk)))) &&
+                GetWgLabeling().IsPublicKey(prev, p.sessionId(principal, aSess), ctx.getSendSidIParams(event).epkI, ctx.getSendSidIParams(event).ekI, KeyTypeDh(), WgEphemeralSk)))) &&
         (ctx.isSendSidR(event) ==>
             principal == ctx.getSendSidRParams(event).b &&
-            GetWgLabeling().IsSecretKey(prev, p.sessionId(principal, ctx.getSendSidRParams(event).bSess), ctx.getSendSidRParams(event).ekR, KeyTypeDHPk(), WgEphemeralSk) &&
+            GetWgLabeling().IsSecretKey(prev, p.sessionId(principal, ctx.getSendSidRParams(event).bSess), ctx.getSendSidRParams(event).ekR, KeyTypeDh(), WgEphemeralSk) &&
             (tr.containsCorruptId(prev.getCorruptIds(), set[p.Id]{ p.principalId(ctx.getSendSidRParams(event).a), p.principalId(principal) }) ||
                 (exists ekI tm.Term :: { SendSidIParams{ ctx.getSendSidRParams(event).a, principal, ekI, ctx.getSendSidRParams(event).epkI } } (
                     prev.eventOccurs(ctx.getSendSidRParams(event).a, ev.NewEvent(SendSidI, SendSidIParams{ ctx.getSendSidRParams(event).a, principal, ekI, ctx.getSendSidRParams(event).epkI })))))) &&
@@ -241,7 +241,7 @@ pure func (ctx WgContext) pureEventInv(principal p.Principal, event ev.Event, pr
             principal == ctx.getSendFirstInitParams(event).a &&
             GetWgUsage().hasKirStructure(ctx.getSendFirstInitParams(event).kIR) &&
             prev.eventOccurs(principal, ev.NewEvent(SendSidI, SendSidIParams{ principal, ctx.getSendFirstInitParams(event).b, ctx.getSendFirstInitParams(event).ekI, tm.exp(tm.generator(), ctx.getSendFirstInitParams(event).ekI) })) &&
-            GetWgLabeling().IsPublicKeyExistential(prev, p.sessionId(principal, ctx.getSendFirstInitParams(event).aSess), tm.exp(tm.generator(), ctx.getSendFirstInitParams(event).ekI), KeyTypeDHPk(), WgEphemeralSk) &&
+            GetWgLabeling().IsPublicKeyExistential(prev, p.sessionId(principal, ctx.getSendFirstInitParams(event).aSess), tm.exp(tm.generator(), ctx.getSendFirstInitParams(event).ekI), KeyTypeDh(), WgEphemeralSk) &&
             (tr.containsCorruptId(prev.getCorruptIds(), set[p.Id]{ p.sessionId(principal, ctx.getSendFirstInitParams(event).aSess), p.principalId(ctx.getSendFirstInitParams(event).b) }) ||
                 prev.eventOccurs(ctx.getSendFirstInitParams(event).b, ev.NewEvent(SendSidR, SendSidRParams{ principal, ctx.getSendFirstInitParams(event).b, ctx.getSendFirstInitParams(event).bSess, tm.exp(tm.generator(), ctx.getSendFirstInitParams(event).ekI), ctx.getSendFirstInitParams(event).ekR, ctx.getSendFirstInitParams(event).kIR, ctx.getSendFirstInitParams(event).kRI }))) &&
             (GetWgLabeling().IsPublishable(prev, ctx.getSendFirstInitParams(event).kIR) ||
@@ -292,11 +292,11 @@ func (ctx WgContext) pureEventInvMonotonic(principal p.Principal, event ev.Event
     if ctx.isSendSidI(event) {
         ekI := ctx.getSendSidIParams(event).ekI
         epkI := ctx.getSendSidIParams(event).epkI
-        assert exists aSess uint32 :: { p.sessionId(principal, aSess) } GetWgLabeling().IsPublicKey(t1, p.sessionId(principal, aSess), epkI, ekI, KeyTypeDHPk(), WgEphemeralSk)
+        assert exists aSess uint32 :: { p.sessionId(principal, aSess) } GetWgLabeling().IsPublicKey(t1, p.sessionId(principal, aSess), epkI, ekI, KeyTypeDh(), WgEphemeralSk)
         // get witness:
         aSess := arb.GetArbUInt32()
-        assume GetWgLabeling().IsPublicKey(t1, p.sessionId(principal, aSess), epkI, ekI, KeyTypeDHPk(), WgEphemeralSk)
-        GetWgLabeling().IsPublicKeyMonotonic(t1, t2, p.sessionId(principal, aSess), epkI, ekI, KeyTypeDHPk(), WgEphemeralSk)
+        assume GetWgLabeling().IsPublicKey(t1, p.sessionId(principal, aSess), epkI, ekI, KeyTypeDh(), WgEphemeralSk)
+        GetWgLabeling().IsPublicKeyMonotonic(t1, t2, p.sessionId(principal, aSess), epkI, ekI, KeyTypeDh(), WgEphemeralSk)
     } else if ctx.isSendSidR(event) {
         a := ctx.getSendSidRParams(event).a
         bSess := ctx.getSendSidRParams(event).bSess
@@ -304,7 +304,7 @@ func (ctx WgContext) pureEventInvMonotonic(principal p.Principal, event ev.Event
         ekR := ctx.getSendSidRParams(event).ekR
         kIR := ctx.getSendSidRParams(event).kIR
         kRI := ctx.getSendSidRParams(event).kRI
-        GetWgLabeling().IsSecretKeyMonotonic(t1, t2, p.sessionId(principal, bSess), ekR, KeyTypeDHPk(), WgEphemeralSk)
+        GetWgLabeling().IsSecretKeyMonotonic(t1, t2, p.sessionId(principal, bSess), ekR, KeyTypeDh(), WgEphemeralSk)
         if tr.containsCorruptId(t1.getCorruptIds(), set[p.Id]{ p.principalId(a), p.principalId(principal) }) {
             t1.getCorruptIdsMonotonic(t2)
             GetWgLabeling().containsCorruptIdMonotonic2(t1.getCorruptIds(), t2.getCorruptIds(), set[p.Id]{ p.principalId(a), p.principalId(principal) })
@@ -326,7 +326,7 @@ func (ctx WgContext) pureEventInvMonotonic(principal p.Principal, event ev.Event
         kIR := ctx.getSendFirstInitParams(event).kIR
         kRI := ctx.getSendFirstInitParams(event).kRI
         t1.eventOccursMonotonic(t2, principal, ev.NewEvent(SendSidI, SendSidIParams{ principal, b, ekI, tm.exp(tm.generator(), ekI) }))
-        GetWgLabeling().IsPublicKeyExistentialMonotonic(t1, t2, p.sessionId(principal, aSess), tm.exp(tm.generator(), ekI), KeyTypeDHPk(), WgEphemeralSk)
+        GetWgLabeling().IsPublicKeyExistentialMonotonic(t1, t2, p.sessionId(principal, aSess), tm.exp(tm.generator(), ekI), KeyTypeDh(), WgEphemeralSk)
         if tr.containsCorruptId(t1.getCorruptIds(), set[p.Id]{ p.sessionId(principal, aSess), p.principalId(b) }) {
             t1.getCorruptIdsMonotonic(t2)
             GetWgLabeling().containsCorruptIdMonotonic2(t1.getCorruptIds(), t2.getCorruptIds(), set[p.Id]{ p.sessionId(principal, aSess), p.principalId(b) })
@@ -1039,24 +1039,6 @@ func (ctx WgUsageContext) Tuple2UsageIndependentOf2ndParam(t tm.Term, v1, v2 int
 
 ghost
 decreases
-pure func (ctx WgUsageContext) IsMsg1(plaintext, pk tm.Term) bool {
-    return plaintext.IsTuple3() && tm.getTupleElem(plaintext, 0) == tm.integer32(1)
-}
-
-ghost
-decreases
-pure func (ctx WgUsageContext) IsMsg2(plaintext, pk tm.Term) bool {
-    return plaintext.IsTuple4() && tm.getTupleElem(plaintext, 0) == tm.integer32(2)
-}
-
-ghost
-decreases
-pure func (ctx WgUsageContext) IsMsg3(plaintext, pk tm.Term) bool {
-    return plaintext.IsTuple2() && tm.getTupleElem(plaintext, 0) == tm.integer32(3)
-}
-
-ghost
-decreases
 pure func (ctx WgUsageContext) ppred(t tr.TraceEntry, usageString string, plaintext, pk tm.Term, skOwner p.Principal) bool {
     return true
 }
@@ -1075,5 +1057,20 @@ requires t1.isSuffix(t2)
 requires ctx.ppred(t1, usageString, plaintext, pk, skOwner)
 ensures  ctx.ppred(t2, usageString, plaintext, pk, skOwner)
 func (ctx WgUsageContext) ppredMonotonic(t1, t2 tr.TraceEntry, usageString string, plaintext, pk tm.Term, skOwner p.Principal) {
+    // no body needed
+}
+
+ghost
+decreases
+pure func (ctx WgUsageContext) SignPred(t tr.TraceEntry, usageString string, msg, sk tm.Term) bool {
+    return false // WireGuard does not perform any signing
+}
+
+ghost
+decreases
+requires t1.isSuffix(t2)
+requires ctx.SignPred(t1, usageString, msg, sk)
+ensures  ctx.SignPred(t2, usageString, msg, sk)
+func (ctx WgUsageContext) SignPredMonotonic(t1, t2 tr.TraceEntry, usageString string, msg, sk tm.Term) {
     // no body needed
 }

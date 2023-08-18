@@ -3,6 +3,7 @@ package library
 import (
 	"encoding/binary"
 	"errors"
+	"fmt"
 	lib "github.com/ModularVerification/ReusableVerificationLibrary/labeledlibrary/library"
 	//@ tm "github.com/ModularVerification/ReusableVerificationLibrary/term"
 )
@@ -38,7 +39,7 @@ func MarshalMsg1(msg *Msg1) (res lib.ByteString) {
 	fieldNonce := buff[4:4+lib.NonceLength]
 	fieldSender := buff[4+lib.NonceLength:]
 
-	binary.LittleEndian.PutUint32(fieldTag, 1)
+	binary.BigEndian.PutUint32(fieldTag, 1)
 	copy(fieldNonce, msg.Na)
 	copy(fieldSender, idA)
 	
@@ -57,7 +58,7 @@ func UnmarshalMsg1(packet lib.ByteString) (msg *Msg1, err error) {
 		return nil, errors.New("Packet is too short to be msg1")
 	}
 
-	tag := binary.LittleEndian.Uint32(packet[:4])
+	tag := binary.BigEndian.Uint32(packet[:4])
 	if tag != 1 {
 		return nil, errors.New("Unexpected tag to be msg1")
 	}
@@ -94,7 +95,7 @@ func MarshalMsg2(msg *Msg2) (res lib.ByteString) {
 	fieldNb := buff[4+lib.NonceLength : 4+2*lib.NonceLength]
 	fieldSender := buff[4+2*lib.NonceLength:]
 
-	binary.LittleEndian.PutUint32(fieldTag, 2)
+	binary.BigEndian.PutUint32(fieldTag, 2)
 	copy(fieldNa, msg.Na)
 	copy(fieldNb, msg.Nb)
 	copy(fieldSender, idB)
@@ -116,7 +117,7 @@ func UnmarshalMsg2(packet lib.ByteString) (msg *Msg2, err error) {
 		return nil, errors.New("Packet is too short to be msg2")
 	}
 
-	tag := binary.LittleEndian.Uint32(packet[:4])
+	tag := binary.BigEndian.Uint32(packet[:4])
 	if tag != 2 {
 		return nil, errors.New("Unexpected tag to be msg2")
 	}
@@ -150,7 +151,7 @@ func MarshalMsg3(msg *Msg3) (res lib.ByteString) {
 	fieldTag := buff[:4]
 	fieldNb := buff[4:]
 
-	binary.LittleEndian.PutUint32(fieldTag, 3)
+	binary.BigEndian.PutUint32(fieldTag, 3)
 	copy(fieldNb, msg.Nb)
 	
 	return buff
@@ -169,7 +170,7 @@ func UnmarshalMsg3(packet lib.ByteString) (msg *Msg3, err error) {
 		return nil, errors.New("Packet is too short to be msg3")
 	}
 
-	tag := binary.LittleEndian.Uint32(packet[:4])
+	tag := binary.BigEndian.Uint32(packet[:4])
 	if tag != 3 {
 		return nil, errors.New("Unexpected tag to be msg2")
 	}
@@ -184,4 +185,28 @@ func UnmarshalMsg3(packet lib.ByteString) (msg *Msg3, err error) {
 		return nil, errors.New("Copying nonce nb failed")
 	}
 	return msg, nil
+}
+
+//@ trusted
+//@ decreases
+//@ requires acc(lib.Mem(na), 1/16)
+//@ requires acc(lib.Mem(receivedNb), 1/16)
+//@ ensures  acc(lib.Mem(na), 1/16)
+//@ ensures  acc(lib.Mem(receivedNb), 1/16)
+func PrintInitiatorSuccess(na, receivedNb lib.ByteString) {
+	fmt.Println("A has successfully finished the protocol run")
+	fmt.Println("A.na: ", na)
+	fmt.Println("A.nb: ", receivedNb)
+}
+
+//@ trusted
+//@ decreases
+//@ requires acc(lib.Mem(receivedNa), 1/16)
+//@ requires acc(lib.Mem(nb), 1/16)
+//@ ensures  acc(lib.Mem(receivedNa), 1/16)
+//@ ensures  acc(lib.Mem(nb), 1/16)
+func PrintResponderSuccess(receivedNa, nb lib.ByteString) {
+	fmt.Println("B has successfully finished the protocol run")
+	fmt.Println("B.na: ", receivedNa)
+	fmt.Println("B.nb: ", nb)
 }

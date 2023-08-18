@@ -200,10 +200,17 @@ func (responder *Responder) receiveMessage(conn *lib.Connection /*@, ghost ekiT 
 	//@ s0 := responder.Snapshot()
 	//@ ghost rid := responder.getRid()
 	//@ ghost pp := responder.getPP()
-	//@ unfold acc(ResponderMem(responder), 1/8)
-	packet, err /*@, term @*/ := responder.LibState.Receive(lib.Principal(responder.a), lib.Principal(responder.b) /*@, responder.llib.Snapshot() @*/)
+	//@ unfold ResponderMem(responder)
+	packet, err /*@, term @*/ := responder.llib.Receive(lib.Principal(responder.a), lib.Principal(responder.b))
 	ok = err == nil
-	//@ fold acc(ResponderMem(responder), 1/8)
+	//@ fold ResponderMem(responder)
+	/*@
+	ghost if firstReceive {
+		responder.transportKeysLabelingBeforeRecvFirstMsgMonotonic(s0, epkIX, ekrT, kirT, kriT, newASess, newCorrupted)
+	} else {
+		responder.transportKeysLabelingAfterRecvFirstMsgMonotonic(s0, ekiT, epkIX, ekrT, kirT, kriT, aSess, newCorrupted)
+	}
+	@*/
 	if !ok {
 		return
 	}
@@ -296,7 +303,7 @@ func (responder *Responder) receiveMessage(conn *lib.Connection /*@, ghost ekiT 
 			GetWgLabeling().PublishableImpliesCorruption(s2, kirT, aBSessL)
 			assert tr.containsCorruptId(s2.getCorruptIds(), set[p.Id]{ aId, bSessId })
 		} else {
-			assert GetWgLabeling().IsPublicKeyExistential(s2, newASessId, epkIX, labeling.KeyTypeDHPk(), WgEphemeralSk)
+			assert GetWgLabeling().IsPublicKeyExistential(s2, newASessId, epkIX, labeling.KeyTypeDh(), WgEphemeralSk)
 			assert GetWgLabeling().IsLabeledPrecise(s2, kirT, Label_k_IRPrecise(newASessId, bSessId))
 			GetWgLabeling().SimplifyJoinToReaders(s2, kirT, newASessId, bSessId)
 			GetWgLabeling().SimplifyJoinToReaders(s2, kriT, newASessId, bSessId)
@@ -322,7 +329,7 @@ ensures  responder.ImmutableState() == old(responder.ImmutableState())
 ensures  old(responder.Snapshot()) == responder.Snapshot()
 ensures  GetWgLabeling().IsPublishable(responder.Snapshot(), kirT) || (
 	isFirstMsgSent(responder.Snapshot(), newEkiT, epkIX, ekrT, kirT, kriT, responder.getASessId(newASess), responder.getBSessId()) &&
-	GetWgLabeling().IsPublicKeyExistential(responder.Snapshot(), responder.getASessId(newASess), epkIX, labeling.KeyTypeDHPk(), WgEphemeralSk)) &&
+	GetWgLabeling().IsPublicKeyExistential(responder.Snapshot(), responder.getASessId(newASess), epkIX, labeling.KeyTypeDh(), WgEphemeralSk)) &&
 	GetWgLabeling().IsLabeledPrecise(responder.Snapshot(), kirT, Label_k_IRPrecise(responder.getASessId(newASess), responder.getBSessId()))
 func (responder *Responder) processPayloadToResponderPred(ekiT, epkIX, ekrT, kirT, kriT, mX tm.Term, aSess uint32, corrupted bool) (newASess uint32, newEkiT tm.Term) {
 	snapshot := responder.Snapshot()
@@ -368,16 +375,16 @@ func (responder *Responder) processPayloadToResponderPred(ekiT, epkIX, ekrT, kir
 	unfold ResponderMem(responder)
 	prev := responder.llib.EventOccursImpliesEventInvWithSnap(snapshot, aId.getPrincipal(), sendFirstInitEvent)
 	fold ResponderMem(responder)
-	assert GetWgLabeling().IsPublicKeyExistential(tr.getPrev(prev), p.sessionId(aId.getPrincipal(), arbASess), epkIX, labeling.KeyTypeDHPk(), WgEphemeralSk)
+	assert GetWgLabeling().IsPublicKeyExistential(tr.getPrev(prev), p.sessionId(aId.getPrincipal(), arbASess), epkIX, labeling.KeyTypeDh(), WgEphemeralSk)
 	if !corrupted {
 		// apply IsPublicDhPkExistential:
-		assert exists sk1 tm.Term :: GetWgLabeling().IsPublicDhPk(snapshot, aSessId, epkIX, sk1, WgEphemeralSk)
-		assert exists sk2 tm.Term :: GetWgLabeling().IsPublicDhPk(snapshot, p.sessionId(aId.getPrincipal(), arbASess), epkIX, sk2, WgEphemeralSk)
+		assert exists sk1 tm.Term :: GetWgLabeling().IsPublicDhKey(snapshot, aSessId, epkIX, sk1, WgEphemeralSk)
+		assert exists sk2 tm.Term :: GetWgLabeling().IsPublicDhKey(snapshot, p.sessionId(aId.getPrincipal(), arbASess), epkIX, sk2, WgEphemeralSk)
 		// existential elimination:
 		sk1 := arb.GetArbTerm()
 		sk2 := arb.GetArbTerm()
-		assume GetWgLabeling().IsPublicDhPk(snapshot, aSessId, epkIX, sk1, WgEphemeralSk)
-		assume GetWgLabeling().IsPublicDhPk(snapshot, p.sessionId(aId.getPrincipal(), arbASess), epkIX, sk2, WgEphemeralSk)
+		assume GetWgLabeling().IsPublicDhKey(snapshot, aSessId, epkIX, sk1, WgEphemeralSk)
+		assume GetWgLabeling().IsPublicDhKey(snapshot, p.sessionId(aId.getPrincipal(), arbASess), epkIX, sk2, WgEphemeralSk)
 		assert epkIX == tm.exp(tm.generator(), sk1)
 		assert epkIX == tm.exp(tm.generator(), sk2)
 		assert aSessId == p.sessionId(aId.getPrincipal(), arbASess)

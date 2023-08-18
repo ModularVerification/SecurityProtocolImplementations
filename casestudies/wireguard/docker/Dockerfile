@@ -1,5 +1,5 @@
-# Gobra commit 1bc4960
-FROM ghcr.io/viperproject/gobra@sha256:0578468fcef0a6f347126253ce535116f55308d513f68ff788353b87c52ae812
+# Gobra commit f21fe70
+FROM ghcr.io/viperproject/gobra@sha256:0e7419455a3648d006e8a9957380e94c1a8e52d2d4b1ce2425af852dc275fb29
 
 RUN apt-get update && \
 	apt-get install -y \
@@ -17,27 +17,27 @@ RUN mkdir tmp && \
 # add Go to path:
 ENV PATH="${PATH}:/usr/local/go/bin"
 
-COPY casestudies/wireguard/.modules-precedence ./.modules-precedence
-COPY casestudies/wireguard/conn ./conn
-COPY casestudies/wireguard/device ./device
-COPY casestudies/wireguard/endpoint ./endpoint
-COPY casestudies/wireguard/initiator ./initiator
-COPY casestudies/wireguard/ipc ./ipc
-COPY casestudies/wireguard/library ./library
-COPY casestudies/wireguard/log ./log
-COPY casestudies/wireguard/replay ./replay
-COPY casestudies/wireguard/responder ./responder
-COPY casestudies/wireguard/tai64n ./tai64n
-COPY casestudies/wireguard/tun ./tun
-COPY casestudies/wireguard/verification ./verification
-COPY casestudies/wireguard/go.mod .
-COPY casestudies/wireguard/go.sum .
-COPY casestudies/wireguard/main.go .
-COPY casestudies/wireguard/README.md .
-COPY casestudies/wireguard/docker/compile.sh .
-COPY casestudies/wireguard/docker/test.sh .
-COPY casestudies/wireguard/docker/verify.sh .
-COPY casestudies/wireguard/load-modules.sh .
+COPY wireguard/.modules-precedence ./.modules-precedence
+COPY wireguard/conn ./conn
+COPY wireguard/device ./device
+COPY wireguard/endpoint ./endpoint
+COPY wireguard/initiator ./initiator
+COPY wireguard/ipc ./ipc
+COPY wireguard/library ./library
+COPY wireguard/log ./log
+COPY wireguard/replay ./replay
+COPY wireguard/responder ./responder
+COPY wireguard/tai64n ./tai64n
+COPY wireguard/tun ./tun
+COPY wireguard/verification ./verification
+COPY wireguard/go.mod .
+COPY wireguard/go.sum .
+COPY wireguard/main.go .
+COPY wireguard/README.md .
+COPY wireguard/docker/compile.sh .
+COPY wireguard/docker/test.sh .
+COPY wireguard/docker/verify.sh .
+COPY wireguard/load-modules.sh .
 
 # copy the reusable verification library
 COPY ReusableVerificationLibrary ./ReusableVerificationLibrary
