@@ -47,7 +47,7 @@ RUN go mod edit -replace github.com/viperproject/ReusableProtocolVerificationLib
 
 # load modules and manually add symlink to reusable verification library:
 RUN ./load-modules.sh && \
-    mkdir -p .modules/github.com/ModularVerification && \
+    mkdir -p .modules/github.com/viperproject && \
     ln -s $PWD/ReusableVerificationLibrary .modules/github.com/viperproject/ReusableProtocolVerificationLibrary
 
 # compile to trigger download of dependent Go packages:
