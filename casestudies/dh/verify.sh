@@ -12,7 +12,7 @@ isCi=$CI
 mkdir -p $scriptDir/.gobra
 
 gobraJar="/gobra/gobra.jar"
-additionalGobraArgs="-I $scriptDir/.verification/precedence -I $scriptParentDir/.verification/dh --module github.com/ModularVerification/casestudies/dh --gobraDirectory $scriptDir/.gobra --parallelizeBranches"
+additionalGobraArgs="-I $scriptDir/.verification/precedence -I $scriptParentDir/.verification/dh --module github.com/viperproject/ProtocolVerificationCaseStudies/dh --gobraDirectory $scriptDir/.gobra --parallelizeBranches"
 
 if [ $isCi ]; then
     echo -e "\033[0Ksection_start:`date +%s`:verify[collapsed=true]\r\033[0KVerifying packages"

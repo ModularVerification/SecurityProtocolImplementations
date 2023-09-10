@@ -11,7 +11,7 @@ isCi=$CI
 mkdir -p $scriptDir/.gobra
 
 gobraJar="/gobra/gobra.jar"
-additionalGobraArgs="-I $scriptDir/verification -I $scriptDir/.modules-precedence -I $scriptDir/.modules -I $scriptDir --module github.com/ModularVerification/casestudies/wireguard --gobraDirectory $scriptDir/.gobra --parallelizeBranches"
+additionalGobraArgs="-I $scriptDir/verification -I $scriptDir/.modules-precedence -I $scriptDir/.modules -I $scriptDir --module github.com/viperproject/ProtocolVerificationCaseStudies/wireguard --gobraDirectory $scriptDir/.gobra --parallelizeBranches"
 packages="common messageCommon messageInitiator messageResponder labelLemma labelLemmaCommon labelLemmaInitiator labelLemmaResponder initiator responder"
 
 if [ $isCi ]; then

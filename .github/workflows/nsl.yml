@@ -28,7 +28,7 @@ jobs:
           echo "/usr/local/go/bin" >> $GITHUB_PATH
 
       - name: Point Go to repo copy
-        run: go mod edit -replace github.com/ModularVerification/ReusableVerificationLibrary=$GITHUB_WORKSPACE/ReusableVerificationLibrary
+        run: go mod edit -replace github.com/viperproject/ReusableProtocolVerificationLibrary=$GITHUB_WORKSPACE/ReusableVerificationLibrary
         working-directory: casestudies/nsl
 
       - name: Compile NSL initiator & responder
@@ -46,13 +46,13 @@ jobs:
         working-directory: casestudies/nsl
 
       - name: Link Reusable Verification Library
-        run: ln -s $GITHUB_WORKSPACE/ReusableVerificationLibrary .modules/github.com/ModularVerification/ReusableVerificationLibrary
+        run: ln -s $GITHUB_WORKSPACE/ReusableVerificationLibrary .modules/github.com/viperproject/ReusableProtocolVerificationLibrary
 
       - name: Verify NSL initiator role 1
         run: |
           mkdir -p .gobra
           gobraJar="/gobra/gobra.jar"
-          additionalGobraArgs="-I $GITHUB_WORKSPACE/casestudies/nsl/.verification/precedence -I $GITHUB_WORKSPACE/.modules --module github.com/ModularVerification/casestudies/nsl --parallelizeBranches"
+          additionalGobraArgs="-I $GITHUB_WORKSPACE/casestudies/nsl/.verification/precedence -I $GITHUB_WORKSPACE/.modules --module github.com/viperproject/ProtocolVerificationCaseStudies/nsl --parallelizeBranches"
           java -Xss128m -jar $gobraJar --recursive -I ./ $additionalGobraArgs --includePackages initiator
         working-directory: casestudies/nsl
 
@@ -60,7 +60,7 @@ jobs:
         run: |
           mkdir -p .gobra
           gobraJar="/gobra/gobra.jar"
-          additionalGobraArgs="-I $GITHUB_WORKSPACE/casestudies/nsl/.verification/precedence -I $GITHUB_WORKSPACE/.modules --module github.com/ModularVerification/casestudies/nsl --parallelizeBranches"
+          additionalGobraArgs="-I $GITHUB_WORKSPACE/casestudies/nsl/.verification/precedence -I $GITHUB_WORKSPACE/.modules --module github.com/viperproject/ProtocolVerificationCaseStudies/nsl --parallelizeBranches"
           java -Xss128m -jar $gobraJar --recursive -I ./ $additionalGobraArgs --includePackages initiator2
         working-directory: casestudies/nsl
 
@@ -68,7 +68,7 @@ jobs:
         run: |
           mkdir -p .gobra
           gobraJar="/gobra/gobra.jar"
-          additionalGobraArgs="-I $GITHUB_WORKSPACE/casestudies/nsl/.verification/precedence -I $GITHUB_WORKSPACE/.modules --module github.com/ModularVerification/casestudies/nsl --parallelizeBranches"
+          additionalGobraArgs="-I $GITHUB_WORKSPACE/casestudies/nsl/.verification/precedence -I $GITHUB_WORKSPACE/.modules --module github.com/viperproject/ProtocolVerificationCaseStudies/nsl --parallelizeBranches"
           java -Xss128m -jar $gobraJar --recursive -I ./ $additionalGobraArgs --includePackages responder
         working-directory: casestudies/nsl
 
@@ -76,7 +76,7 @@ jobs:
         run: |
           mkdir -p .gobra
           gobraJar="/gobra/gobra.jar"
-          additionalGobraArgs="-I $GITHUB_WORKSPACE/casestudies/nsl/.verification/precedence -I $GITHUB_WORKSPACE/.modules --module github.com/ModularVerification/casestudies/nsl --parallelizeBranches"
+          additionalGobraArgs="-I $GITHUB_WORKSPACE/casestudies/nsl/.verification/precedence -I $GITHUB_WORKSPACE/.modules --module github.com/viperproject/ProtocolVerificationCaseStudies/nsl --parallelizeBranches"
           # verify packages located in the current directory and in `common`:
           java -Xss128m -jar $gobraJar --directory ./ common -I ./ $additionalGobraArgs
         working-directory: casestudies/nsl

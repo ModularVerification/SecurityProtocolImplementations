@@ -3,7 +3,7 @@ package library
 import (
 	rand "crypto/rand"
 	binary "encoding/binary"
-	device "github.com/ModularVerification/casestudies/wireguard/device"
+	device "github.com/viperproject/ProtocolVerificationCaseStudies/wireguard/device"
 
 	blake2s "golang.org/x/crypto/blake2s"
 	chacha20poly1305 "golang.org/x/crypto/chacha20poly1305"
@@ -11,8 +11,8 @@ import (
 	bytes "bytes"
 	subtle "crypto/subtle"
 
-	//@ . "github.com/ModularVerification/ReusableVerificationLibrary/labeledlibrary/library"
-	//@ by "github.com/ModularVerification/ReusableVerificationLibrary/term"
+	//@ . "github.com/viperproject/ReusableProtocolVerificationLibrary/labeledlibrary/library"
+	//@ by "github.com/viperproject/ReusableProtocolVerificationLibrary/term"
 )
 
 

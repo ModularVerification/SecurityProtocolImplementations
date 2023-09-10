@@ -1,6 +1,6 @@
 package messageCommon
 
-import tm "github.com/ModularVerification/ReusableVerificationLibrary/term"
+import tm "github.com/viperproject/ReusableProtocolVerificationLibrary/term"
 
 
 // bytes

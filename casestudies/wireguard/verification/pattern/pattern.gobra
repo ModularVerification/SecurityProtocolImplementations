@@ -1,15 +1,15 @@
 package patternInitiator
 
-import "github.com/ModularVerification/ReusableVerificationLibrary/label"
-import ll "github.com/ModularVerification/ReusableVerificationLibrary/labeledlibrary"
-import "github.com/ModularVerification/ReusableVerificationLibrary/labeling"
-import p "github.com/ModularVerification/ReusableVerificationLibrary/principal"
-import tm "github.com/ModularVerification/ReusableVerificationLibrary/term"
-import u "github.com/ModularVerification/ReusableVerificationLibrary/usage"
-import . "github.com/ModularVerification/casestudies/wireguard/verification/common"
-import li "github.com/ModularVerification/casestudies/wireguard/verification/labellemma/initiator"
-import mi "github.com/ModularVerification/casestudies/wireguard/verification/messages/initiator"
-import mr "github.com/ModularVerification/casestudies/wireguard/verification/messages/responder"
+import "github.com/viperproject/ReusableProtocolVerificationLibrary/label"
+import ll "github.com/viperproject/ReusableProtocolVerificationLibrary/labeledlibrary"
+import "github.com/viperproject/ReusableProtocolVerificationLibrary/labeling"
+import p "github.com/viperproject/ReusableProtocolVerificationLibrary/principal"
+import tm "github.com/viperproject/ReusableProtocolVerificationLibrary/term"
+import u "github.com/viperproject/ReusableProtocolVerificationLibrary/usage"
+import . "github.com/viperproject/ProtocolVerificationCaseStudies/wireguard/verification/common"
+import li "github.com/viperproject/ProtocolVerificationCaseStudies/wireguard/verification/labellemma/initiator"
+import mi "github.com/viperproject/ProtocolVerificationCaseStudies/wireguard/verification/messages/initiator"
+import mr "github.com/viperproject/ProtocolVerificationCaseStudies/wireguard/verification/messages/responder"
 
 
 ghost

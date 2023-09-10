@@ -31,18 +31,18 @@ The version of Z3 can be checked by running `z3 -version`.
 Change into the directory `case_studies/wireguard/src`. All subsequent commands are assumed to be executed in this directory.
 To verify the initiator's implementation, run:
 ```
-java -Xss128m -jar <PATH TO GOBRA JAR> --recursive --includePackages initiator -I verification -I .modules-precedence -I .modules -I ./ --module github.com/ModularVerification/casestudies/wireguard --parallelizeBranches
+java -Xss128m -jar <PATH TO GOBRA JAR> --recursive --includePackages initiator -I verification -I .modules-precedence -I .modules -I ./ --module github.com/viperproject/ProtocolVerificationCaseStudies/wireguard --parallelizeBranches
 ```
 
 Similarly, to verify the responder's implementation, run:
 ```
-java -Xss128m -jar <PATH TO GOBRA JAR> --recursive --includePackages responder -I verification -I .modules-precedence -I .modules -I ./ --module github.com/ModularVerification/casestudies/wireguard --parallelizeBranches
+java -Xss128m -jar <PATH TO GOBRA JAR> --recursive --includePackages responder -I verification -I .modules-precedence -I .modules -I ./ --module github.com/viperproject/ProtocolVerificationCaseStudies/wireguard --parallelizeBranches
 ```
 
 Description of the flags:
 - `-Xss128m` increases the stack size used to run the verifier. The default argument does not suffice and will cause a runtime exception.
 - `-I verification -I .modules-precedence -I .modules -I ./` instructs Gobra to consider the current directory and the `verification`, `.modules-precedence`, and `.modules` subfolders when performing lookups of imported packages. Note that the order defines precedence, i.e. packages found in subfolders mentioned earlier will be selected over those found in e.g. the current directory.
-- `--module github.com/ModularVerification/casestudies/wireguard` informs Gobra that we are currently in this module. This impacts the package resolution as it basically means that Gobra will ignore this prefix. For example, the import statement `import lib "github.com/ModularVerification/casestudies/wireguard/library"` results in Gobra looking for the folder `library` in the specified include directories (`-I` option).
+- `--module github.com/viperproject/ProtocolVerificationCaseStudies/wireguard` informs Gobra that we are currently in this module. This impacts the package resolution as it basically means that Gobra will ignore this prefix. For example, the import statement `import lib "github.com/viperproject/ProtocolVerificationCaseStudies/wireguard/library"` results in Gobra looking for the folder `library` in the specified include directories (`-I` option).
 - `--includePackages initiator` specifies the package that is verified
 
 

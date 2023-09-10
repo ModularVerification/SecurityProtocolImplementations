@@ -28,7 +28,7 @@ jobs:
           echo "/usr/local/go/bin" >> $GITHUB_PATH
 
       - name: Point Go to repo copy
-        run: go mod edit -replace github.com/ModularVerification/ReusableVerificationLibrary=$GITHUB_WORKSPACE/ReusableVerificationLibrary
+        run: go mod edit -replace github.com/viperproject/ReusableProtocolVerificationLibrary=$GITHUB_WORKSPACE/ReusableVerificationLibrary
         working-directory: casestudies/dh
 
       - name: Compile DH initiator & responder
@@ -46,13 +46,13 @@ jobs:
         working-directory: casestudies/dh
 
       - name: Link Reusable Verification Library
-        run: ln -s $GITHUB_WORKSPACE/ReusableVerificationLibrary .modules/github.com/ModularVerification/ReusableVerificationLibrary
+        run: ln -s $GITHUB_WORKSPACE/ReusableVerificationLibrary .modules/github.com/viperproject/ReusableProtocolVerificationLibrary
 
       - name: Verify DH initiator
         run: |
           mkdir -p .gobra
           gobraJar="/gobra/gobra.jar"
-          additionalGobraArgs="-I $GITHUB_WORKSPACE/casestudies/dh/.verification/precedence -I $GITHUB_WORKSPACE/.modules --module github.com/ModularVerification/casestudies/dh --parallelizeBranches"
+          additionalGobraArgs="-I $GITHUB_WORKSPACE/casestudies/dh/.verification/precedence -I $GITHUB_WORKSPACE/.modules --module github.com/viperproject/ProtocolVerificationCaseStudies/dh --parallelizeBranches"
           java -Xss128m -jar $gobraJar --recursive -I ./ $additionalGobraArgs --includePackages initiator
         working-directory: casestudies/dh
 
@@ -60,7 +60,7 @@ jobs:
         run: |
           mkdir -p .gobra
           gobraJar="/gobra/gobra.jar"
-          additionalGobraArgs="-I $GITHUB_WORKSPACE/casestudies/dh/.verification/precedence -I $GITHUB_WORKSPACE/.modules --module github.com/ModularVerification/casestudies/dh --parallelizeBranches"
+          additionalGobraArgs="-I $GITHUB_WORKSPACE/casestudies/dh/.verification/precedence -I $GITHUB_WORKSPACE/.modules --module github.com/viperproject/ProtocolVerificationCaseStudies/dh --parallelizeBranches"
           java -Xss128m -jar $gobraJar --recursive -I ./ $additionalGobraArgs --includePackages responder
         working-directory: casestudies/dh
 
@@ -68,7 +68,7 @@ jobs:
         run: |
           mkdir -p .gobra
           gobraJar="/gobra/gobra.jar"
-          additionalGobraArgs="-I $GITHUB_WORKSPACE/casestudies/dh/.verification/precedence -I $GITHUB_WORKSPACE/.modules --module github.com/ModularVerification/casestudies/dh --parallelizeBranches"
+          additionalGobraArgs="-I $GITHUB_WORKSPACE/casestudies/dh/.verification/precedence -I $GITHUB_WORKSPACE/.modules --module github.com/viperproject/ProtocolVerificationCaseStudies/dh --parallelizeBranches"
           # verify packages located in the current directory and in `common`:
           java -Xss128m -jar $gobraJar --directory ./ common -I ./ $additionalGobraArgs
         working-directory: casestudies/dh

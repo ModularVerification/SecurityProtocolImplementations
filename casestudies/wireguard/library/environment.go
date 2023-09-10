@@ -1,19 +1,19 @@
 package library
 
 import (
-	device "github.com/ModularVerification/casestudies/wireguard/device"
-	tai64n "github.com/ModularVerification/casestudies/wireguard/tai64n"
+	device "github.com/viperproject/ProtocolVerificationCaseStudies/wireguard/device"
+	tai64n "github.com/viperproject/ProtocolVerificationCaseStudies/wireguard/tai64n"
 
-	//@ ev "github.com/ModularVerification/ReusableVerificationLibrary/event"
-	//@ "github.com/ModularVerification/ReusableVerificationLibrary/label"
-	//@ ll "github.com/ModularVerification/ReusableVerificationLibrary/labeledlibrary"
-	lib "github.com/ModularVerification/ReusableVerificationLibrary/labeledlibrary/library"
-	//@ "github.com/ModularVerification/ReusableVerificationLibrary/labeling"
-	//@ p "github.com/ModularVerification/ReusableVerificationLibrary/principal"
-	//@ . "github.com/ModularVerification/ReusableVerificationLibrary/term"
-	//@ tr "github.com/ModularVerification/ReusableVerificationLibrary/trace"
-	//@ u "github.com/ModularVerification/ReusableVerificationLibrary/usage"
-	//@ common "github.com/ModularVerification/casestudies/wireguard/verification/common"
+	//@ ev "github.com/viperproject/ReusableProtocolVerificationLibrary/event"
+	//@ "github.com/viperproject/ReusableProtocolVerificationLibrary/label"
+	//@ ll "github.com/viperproject/ReusableProtocolVerificationLibrary/labeledlibrary"
+	lib "github.com/viperproject/ReusableProtocolVerificationLibrary/labeledlibrary/library"
+	//@ "github.com/viperproject/ReusableProtocolVerificationLibrary/labeling"
+	//@ p "github.com/viperproject/ReusableProtocolVerificationLibrary/principal"
+	//@ . "github.com/viperproject/ReusableProtocolVerificationLibrary/term"
+	//@ tr "github.com/viperproject/ReusableProtocolVerificationLibrary/trace"
+	//@ u "github.com/viperproject/ReusableProtocolVerificationLibrary/usage"
+	//@ common "github.com/viperproject/ProtocolVerificationCaseStudies/wireguard/verification/common"
 )
 
 

@@ -1,13 +1,13 @@
 package responder
 
-import lib "github.com/ModularVerification/casestudies/wireguard/library"
-//@ import . "github.com/ModularVerification/casestudies/wireguard/verification/common"
+import lib "github.com/viperproject/ProtocolVerificationCaseStudies/wireguard/library"
+//@ import . "github.com/viperproject/ProtocolVerificationCaseStudies/wireguard/verification/common"
 
-import ll "github.com/ModularVerification/ReusableVerificationLibrary/labeledlibrary"
-//@ import labeledlib "github.com/ModularVerification/ReusableVerificationLibrary/labeledlibrary/library"
-//@ import p "github.com/ModularVerification/ReusableVerificationLibrary/principal"
-//@ import tm "github.com/ModularVerification/ReusableVerificationLibrary/term"
-//@ import tr "github.com/ModularVerification/ReusableVerificationLibrary/trace"
+import ll "github.com/viperproject/ReusableProtocolVerificationLibrary/labeledlibrary"
+//@ import labeledlib "github.com/viperproject/ReusableProtocolVerificationLibrary/labeledlibrary/library"
+//@ import p "github.com/viperproject/ReusableProtocolVerificationLibrary/principal"
+//@ import tm "github.com/viperproject/ReusableProtocolVerificationLibrary/term"
+//@ import tr "github.com/viperproject/ReusableProtocolVerificationLibrary/trace"
 
 
 type Responder struct {

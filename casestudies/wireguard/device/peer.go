@@ -4,7 +4,7 @@ import (
 	"encoding/base64"
 	"fmt"
 
-	"github.com/ModularVerification/casestudies/wireguard/conn"
+	"github.com/viperproject/ProtocolVerificationCaseStudies/wireguard/conn"
 )
 
 type Peer struct {

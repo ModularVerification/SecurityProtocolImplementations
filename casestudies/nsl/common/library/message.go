@@ -4,8 +4,8 @@ import (
 	"encoding/binary"
 	"errors"
 	"fmt"
-	lib "github.com/ModularVerification/ReusableVerificationLibrary/labeledlibrary/library"
-	//@ tm "github.com/ModularVerification/ReusableVerificationLibrary/term"
+	lib "github.com/viperproject/ReusableProtocolVerificationLibrary/labeledlibrary/library"
+	//@ tm "github.com/viperproject/ReusableProtocolVerificationLibrary/term"
 )
 
 type Msg1 struct {

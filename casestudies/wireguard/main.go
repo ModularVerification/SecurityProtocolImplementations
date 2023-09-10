@@ -12,17 +12,17 @@ import (
 	"golang.org/x/net/ipv4"
 	"golang.org/x/net/ipv6"
 
-	ll "github.com/ModularVerification/ReusableVerificationLibrary/labeledlibrary"
-	labeledlib "github.com/ModularVerification/ReusableVerificationLibrary/labeledlibrary/library"
+	ll "github.com/viperproject/ReusableProtocolVerificationLibrary/labeledlibrary"
+	labeledlib "github.com/viperproject/ReusableProtocolVerificationLibrary/labeledlibrary/library"
 
-	"github.com/ModularVerification/casestudies/wireguard/conn"
-	"github.com/ModularVerification/casestudies/wireguard/device"
-	"github.com/ModularVerification/casestudies/wireguard/endpoint"
-	"github.com/ModularVerification/casestudies/wireguard/library"
+	"github.com/viperproject/ProtocolVerificationCaseStudies/wireguard/conn"
+	"github.com/viperproject/ProtocolVerificationCaseStudies/wireguard/device"
+	"github.com/viperproject/ProtocolVerificationCaseStudies/wireguard/endpoint"
+	"github.com/viperproject/ProtocolVerificationCaseStudies/wireguard/library"
 
-	"github.com/ModularVerification/casestudies/wireguard/initiator"
-	"github.com/ModularVerification/casestudies/wireguard/log"
-	"github.com/ModularVerification/casestudies/wireguard/responder"
+	"github.com/viperproject/ProtocolVerificationCaseStudies/wireguard/initiator"
+	"github.com/viperproject/ProtocolVerificationCaseStudies/wireguard/log"
+	"github.com/viperproject/ProtocolVerificationCaseStudies/wireguardies/wireguardies/wireguard/responder"
 )
 
 const logLevel = log.LogLevelError

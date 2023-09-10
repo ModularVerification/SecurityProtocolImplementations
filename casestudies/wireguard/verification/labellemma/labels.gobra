@@ -1,7 +1,7 @@
 package labelLemma
 
-import "github.com/ModularVerification/ReusableVerificationLibrary/label"
-import p "github.com/ModularVerification/ReusableVerificationLibrary/principal"
+import "github.com/viperproject/ReusableProtocolVerificationLibrary/label"
+import p "github.com/viperproject/ReusableProtocolVerificationLibrary/principal"
 
 
 // the same term constructed for the initiator has the same

@@ -1,15 +1,15 @@
 package common
 
-import arb "github.com/ModularVerification/ReusableVerificationLibrary/arbitrary"
-import ev "github.com/ModularVerification/ReusableVerificationLibrary/event"
-import "github.com/ModularVerification/ReusableVerificationLibrary/label"
-import . "github.com/ModularVerification/ReusableVerificationLibrary/labeling"
-import p "github.com/ModularVerification/ReusableVerificationLibrary/principal"
-import tm "github.com/ModularVerification/ReusableVerificationLibrary/term"
-import tr "github.com/ModularVerification/ReusableVerificationLibrary/trace"
-import tri "github.com/ModularVerification/ReusableVerificationLibrary/traceinvariant"
-import u "github.com/ModularVerification/ReusableVerificationLibrary/usage"
-import . "github.com/ModularVerification/ReusableVerificationLibrary/usagecontext"
+import arb "github.com/viperproject/ReusableProtocolVerificationLibrary/arbitrary"
+import ev "github.com/viperproject/ReusableProtocolVerificationLibrary/event"
+import "github.com/viperproject/ReusableProtocolVerificationLibrary/label"
+import . "github.com/viperproject/ReusableProtocolVerificationLibrary/labeling"
+import p "github.com/viperproject/ReusableProtocolVerificationLibrary/principal"
+import tm "github.com/viperproject/ReusableProtocolVerificationLibrary/term"
+import tr "github.com/viperproject/ReusableProtocolVerificationLibrary/trace"
+import tri "github.com/viperproject/ReusableProtocolVerificationLibrary/traceinvariant"
+import u "github.com/viperproject/ReusableProtocolVerificationLibrary/usage"
+import . "github.com/viperproject/ReusableProtocolVerificationLibrary/usagecontext"
 
 
 const NslKey = "NSL Key"

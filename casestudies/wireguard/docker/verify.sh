@@ -6,7 +6,7 @@ set -e
 scriptDir=$(dirname "$0")
 mkdir -p .gobra
 
-additionalGobraArgs="-I $scriptDir/verification -I $scriptDir/.modules-precedence -I $scriptDir/.modules -I $scriptDir --module github.com/ModularVerification/casestudies/wireguard --gobraDirectory $scriptDir/.gobra --parallelizeBranches"
+additionalGobraArgs="-I $scriptDir/verification -I $scriptDir/.modules-precedence -I $scriptDir/.modules -I $scriptDir --module github.com/viperproject/ProtocolVerificationCaseStudies/wireguard --gobraDirectory $scriptDir/.gobra --parallelizeBranches"
 
 # verify initiator
 echo "Verifying the Initiator. This might take some time..."

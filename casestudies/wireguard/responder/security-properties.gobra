@@ -1,21 +1,21 @@
 package responder
 
-import att "github.com/ModularVerification/ReusableVerificationLibrary/attacker"
-import ev "github.com/ModularVerification/ReusableVerificationLibrary/event"
-import "github.com/ModularVerification/ReusableVerificationLibrary/label"
-import ll "github.com/ModularVerification/ReusableVerificationLibrary/labeledlibrary"
-import "github.com/ModularVerification/ReusableVerificationLibrary/labeling"
-import p "github.com/ModularVerification/ReusableVerificationLibrary/principal"
-import tm "github.com/ModularVerification/ReusableVerificationLibrary/term"
-import tr "github.com/ModularVerification/ReusableVerificationLibrary/trace"
-import u "github.com/ModularVerification/ReusableVerificationLibrary/usage"
+import att "github.com/viperproject/ReusableProtocolVerificationLibrary/attacker"
+import ev "github.com/viperproject/ReusableProtocolVerificationLibrary/event"
+import "github.com/viperproject/ReusableProtocolVerificationLibrary/label"
+import ll "github.com/viperproject/ReusableProtocolVerificationLibrary/labeledlibrary"
+import "github.com/viperproject/ReusableProtocolVerificationLibrary/labeling"
+import p "github.com/viperproject/ReusableProtocolVerificationLibrary/principal"
+import tm "github.com/viperproject/ReusableProtocolVerificationLibrary/term"
+import tr "github.com/viperproject/ReusableProtocolVerificationLibrary/trace"
+import u "github.com/viperproject/ReusableProtocolVerificationLibrary/usage"
 
-import . "github.com/ModularVerification/casestudies/wireguard/verification/common"
-import . "github.com/ModularVerification/casestudies/wireguard/verification/labellemma"
-import . "github.com/ModularVerification/casestudies/wireguard/verification/labellemma/common"
-import . "github.com/ModularVerification/casestudies/wireguard/verification/labellemma/responder"
-import . "github.com/ModularVerification/casestudies/wireguard/verification/messages/common"
-import . "github.com/ModularVerification/casestudies/wireguard/verification/messages/responder"
+import . "github.com/viperproject/ProtocolVerificationCaseStudies/wireguard/verification/common"
+import . "github.com/viperproject/ProtocolVerificationCaseStudies/wireguard/verification/labellemma"
+import . "github.com/viperproject/ProtocolVerificationCaseStudies/wireguard/verification/labellemma/common"
+import . "github.com/viperproject/ProtocolVerificationCaseStudies/wireguard/verification/labellemma/responder"
+import . "github.com/viperproject/ProtocolVerificationCaseStudies/wireguard/verification/messages/common"
+import . "github.com/viperproject/ProtocolVerificationCaseStudies/wireguard/verification/messages/responder"
 
 
 ghost

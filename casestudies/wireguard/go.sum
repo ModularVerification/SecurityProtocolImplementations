@@ -1,7 +1,7 @@
-github.com/ModularVerification/ReusableVerificationLibrary v0.0.0-20230713150455-b86a7dce6a03 h1:1Rm0zhtY/+PeqLeL1k4nY2ErRwffp8SRSa+1h9idBOs=
-github.com/ModularVerification/ReusableVerificationLibrary v0.0.0-20230713150455-b86a7dce6a03/go.mod h1:51p4r2aylf0v/crT62nj2Xsm9dlrqXx2VfZ7TZQQSKU=
-github.com/ModularVerification/ReusableVerificationLibrary v0.0.0-20230818142413-b572ac96e8a6 h1:n+B+Ti+YNRdXgPt5dVtjaY5eG/e6owUq/yELm9Jf1No=
-github.com/ModularVerification/ReusableVerificationLibrary v0.0.0-20230818142413-b572ac96e8a6/go.mod h1:51p4r2aylf0v/crT62nj2Xsm9dlrqXx2VfZ7TZQQSKU=
+github.com/viperproject/ReusableProtocolVerificationLibrary v0.0.0-20230713150455-b86a7dce6a03 h1:1Rm0zhtY/+PeqLeL1k4nY2ErRwffp8SRSa+1h9idBOs=
+github.com/viperproject/ReusableProtocolVerificationLibrary v0.0.0-20230713150455-b86a7dce6a03/go.mod h1:51p4r2aylf0v/crT62nj2Xsm9dlrqXx2VfZ7TZQQSKU=
+github.com/viperproject/ReusableProtocolVerificationLibrary v0.0.0-20230818142413-b572ac96e8a6 h1:n+B+Ti+YNRdXgPt5dVtjaY5eG/e6owUq/yELm9Jf1No=
+github.com/viperproject/ReusableProtocolVerificationLibrary v0.0.0-20230818142413-b572ac96e8a6/go.mod h1:51p4r2aylf0v/crT62nj2Xsm9dlrqXx2VfZ7TZQQSKU=
 golang.org/x/crypto v0.0.0-20220315160706-3147a52a75dd/go.mod h1:IxCIyHEi3zRg3s0A5j5BB6A9Jmi73HwBIUl50j+osU4=
 golang.org/x/crypto v0.0.0-20220722155217-630584e8d5aa h1:zuSxTR4o9y82ebqCUJYNGJbGPo6sKVl54f/TVDObg1c=
 golang.org/x/crypto v0.0.0-20220722155217-630584e8d5aa/go.mod h1:IxCIyHEi3zRg3s0A5j5BB6A9Jmi73HwBIUl50j+osU4=

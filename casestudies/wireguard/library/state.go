@@ -2,12 +2,12 @@ package library
 
 import (
 	fmt "fmt"
-	conn "github.com/ModularVerification/casestudies/wireguard/conn"
-	device "github.com/ModularVerification/casestudies/wireguard/device"
-	lib "github.com/ModularVerification/ReusableVerificationLibrary/labeledlibrary/library"
-	p "github.com/ModularVerification/ReusableVerificationLibrary/principal"
-	//@ tm "github.com/ModularVerification/ReusableVerificationLibrary/term"
-	//@ tr "github.com/ModularVerification/ReusableVerificationLibrary/trace"
+	conn "github.com/viperproject/ProtocolVerificationCaseStudies/wireguard/conn"
+	device "github.com/viperproject/ProtocolVerificationCaseStudies/wireguard/device"
+	lib "github.com/viperproject/ReusableProtocolVerificationLibrary/labeledlibrary/library"
+	p "github.com/viperproject/ReusableProtocolVerificationLibrary/principal"
+	//@ tm "github.com/viperproject/ReusableProtocolVerificationLibrary/term"
+	//@ tr "github.com/viperproject/ReusableProtocolVerificationLibrary/trace"
 )
 
 

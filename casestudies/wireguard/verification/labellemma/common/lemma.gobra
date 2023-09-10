@@ -1,12 +1,12 @@
 package labelLemmaCommon
 
-import "github.com/ModularVerification/ReusableVerificationLibrary/label"
-import . "github.com/ModularVerification/ReusableVerificationLibrary/labeling"
-import tm "github.com/ModularVerification/ReusableVerificationLibrary/term"
-import tr "github.com/ModularVerification/ReusableVerificationLibrary/trace"
-import u "github.com/ModularVerification/ReusableVerificationLibrary/usage"
-import . "github.com/ModularVerification/casestudies/wireguard/verification/common"
-import . "github.com/ModularVerification/casestudies/wireguard/verification/messages/common"
+import "github.com/viperproject/ReusableProtocolVerificationLibrary/label"
+import . "github.com/viperproject/ReusableProtocolVerificationLibrary/labeling"
+import tm "github.com/viperproject/ReusableProtocolVerificationLibrary/term"
+import tr "github.com/viperproject/ReusableProtocolVerificationLibrary/trace"
+import u "github.com/viperproject/ReusableProtocolVerificationLibrary/usage"
+import . "github.com/viperproject/ProtocolVerificationCaseStudies/wireguard/verification/common"
+import . "github.com/viperproject/ProtocolVerificationCaseStudies/wireguard/verification/messages/common"
 
 
 ghost

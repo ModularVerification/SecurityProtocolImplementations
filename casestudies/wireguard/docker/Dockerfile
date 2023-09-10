@@ -43,12 +43,12 @@ COPY casestudies/wireguard/load-modules.sh .
 COPY ReusableVerificationLibrary ./ReusableVerificationLibrary
 
 # point Go to local copy of the library:
-RUN go mod edit -replace github.com/ModularVerification/ReusableVerificationLibrary=./ReusableVerificationLibrary
+RUN go mod edit -replace github.com/viperproject/ReusableProtocolVerificationLibrary=./ReusableVerificationLibrary
 
 # load modules and manually add symlink to reusable verification library:
 RUN ./load-modules.sh && \
     mkdir -p .modules/github.com/ModularVerification && \
-    ln -s $PWD/ReusableVerificationLibrary .modules/github.com/ModularVerification/ReusableVerificationLibrary
+    ln -s $PWD/ReusableVerificationLibrary .modules/github.com/viperproject/ReusableProtocolVerificationLibrary
 
 # compile to trigger download of dependent Go packages:
 RUN ./compile.sh

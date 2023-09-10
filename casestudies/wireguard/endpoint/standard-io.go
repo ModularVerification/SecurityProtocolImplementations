@@ -7,8 +7,8 @@ import (
 	"os"
 	"sync"
 
-	"github.com/ModularVerification/casestudies/wireguard/device"
-	"github.com/ModularVerification/casestudies/wireguard/log"
+	"github.com/viperproject/ProtocolVerificationCaseStudies/wireguard/device"
+	"github.com/viperproject/ProtocolVerificationCaseStudies/wireguard/log"
 )
 
 /**

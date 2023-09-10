@@ -22,17 +22,17 @@ package main
 
 import (
 	"sync"
-	chanCom "github.com/ModularVerification/ReusableVerificationLibrary/labeledlibrary/channelcommunication"
-	lib "github.com/ModularVerification/ReusableVerificationLibrary/labeledlibrary/library"
-	//@ "github.com/ModularVerification/ReusableVerificationLibrary/labeling"
-	"github.com/ModularVerification/casestudies/nsl/initiator"
-	"github.com/ModularVerification/casestudies/nsl/responder"
-	//@ common "github.com/ModularVerification/casestudies/nsl/common"
-	//@ p "github.com/ModularVerification/ReusableVerificationLibrary/principal"
-	//@ tm "github.com/ModularVerification/ReusableVerificationLibrary/term"
-	//@ tr "github.com/ModularVerification/ReusableVerificationLibrary/trace"
-	//@ tri "github.com/ModularVerification/ReusableVerificationLibrary/traceinvariant"
-	//@ tman "github.com/ModularVerification/ReusableVerificationLibrary/tracemanager"
+	chanCom "github.com/viperproject/ReusableProtocolVerificationLibrary/labeledlibrary/channelcommunication"
+	lib "github.com/viperproject/ReusableProtocolVerificationLibrary/labeledlibrary/library"
+	//@ "github.com/viperproject/ReusableProtocolVerificationLibrary/labeling"
+	"github.com/viperproject/ProtocolVerificationCaseStudies/nsl/initiator"
+	"github.com/viperproject/ProtocolVerificationCaseStudies/nsl/responder"
+	//@ common "github.com/viperproject/ProtocolVerificationCaseStudies/nsl/common"
+	//@ p "github.com/viperproject/ReusableProtocolVerificationLibrary/principal"
+	//@ tm "github.com/viperproject/ReusableProtocolVerificationLibrary/term"
+	//@ tr "github.com/viperproject/ReusableProtocolVerificationLibrary/trace"
+	//@ tri "github.com/viperproject/ReusableProtocolVerificationLibrary/traceinvariant"
+	//@ tman "github.com/viperproject/ReusableProtocolVerificationLibrary/tracemanager"
 )
 
 /*@

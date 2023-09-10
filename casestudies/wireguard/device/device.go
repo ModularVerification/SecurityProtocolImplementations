@@ -1,8 +1,8 @@
 package device
 
 import (
-	"github.com/ModularVerification/casestudies/wireguard/conn"
-	"github.com/ModularVerification/casestudies/wireguard/log"
+	"github.com/viperproject/ProtocolVerificationCaseStudies/wireguard/conn"
+	"github.com/viperproject/ProtocolVerificationCaseStudies/wireguard/log"
 )
 
 type Device struct {

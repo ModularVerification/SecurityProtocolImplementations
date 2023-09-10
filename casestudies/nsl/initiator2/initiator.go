@@ -1,17 +1,17 @@
 package initiator2
 
-//@ import ev "github.com/ModularVerification/ReusableVerificationLibrary/event"
-//@ import "github.com/ModularVerification/ReusableVerificationLibrary/label"
-import ll "github.com/ModularVerification/ReusableVerificationLibrary/labeledlibrary"
-import lib "github.com/ModularVerification/ReusableVerificationLibrary/labeledlibrary/library"
-//@ import "github.com/ModularVerification/ReusableVerificationLibrary/labeling"
-//@ import . "github.com/ModularVerification/casestudies/nsl/common"
-import . "github.com/ModularVerification/casestudies/nsl/common/library"
-import p "github.com/ModularVerification/ReusableVerificationLibrary/principal"
-//@ import tm "github.com/ModularVerification/ReusableVerificationLibrary/term"
-//@ import tr "github.com/ModularVerification/ReusableVerificationLibrary/trace"
-//@ import tman "github.com/ModularVerification/ReusableVerificationLibrary/tracemanager"
-//@ import u "github.com/ModularVerification/ReusableVerificationLibrary/usage"
+//@ import ev "github.com/viperproject/ReusableProtocolVerificationLibrary/event"
+//@ import "github.com/viperproject/ReusableProtocolVerificationLibrary/label"
+import ll "github.com/viperproject/ReusableProtocolVerificationLibrary/labeledlibrary"
+import lib "github.com/viperproject/ReusableProtocolVerificationLibrary/labeledlibrary/library"
+//@ import "github.com/viperproject/ReusableProtocolVerificationLibrary/labeling"
+//@ import . "github.com/viperproject/ProtocolVerificationCaseStudies/nsl/common"
+import . "github.com/viperproject/ProtocolVerificationCaseStudies/nsl/common/library"
+import p "github.com/viperproject/ReusableProtocolVerificationLibrary/principal"
+//@ import tm "github.com/viperproject/ReusableProtocolVerificationLibrary/term"
+//@ import tr "github.com/viperproject/ReusableProtocolVerificationLibrary/trace"
+//@ import tman "github.com/viperproject/ReusableProtocolVerificationLibrary/tracemanager"
+//@ import u "github.com/viperproject/ReusableProtocolVerificationLibrary/usage"
 
 type A struct {
 	// identifier of A

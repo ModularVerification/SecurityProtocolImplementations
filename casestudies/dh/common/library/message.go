@@ -5,8 +5,8 @@ import (
 	"errors"
 	"fmt"
 	"math"
-	. "github.com/ModularVerification/ReusableVerificationLibrary/labeledlibrary/library"
-	//@ . "github.com/ModularVerification/ReusableVerificationLibrary/term"
+	. "github.com/viperproject/ReusableProtocolVerificationLibrary/labeledlibrary/library"
+	//@ . "github.com/viperproject/ReusableProtocolVerificationLibrary/term"
 )
 
 

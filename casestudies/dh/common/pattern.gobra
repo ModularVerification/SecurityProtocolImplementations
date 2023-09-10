@@ -1,7 +1,7 @@
 package common
 
-import tm "github.com/ModularVerification/ReusableVerificationLibrary/term"
-import . "github.com/ModularVerification/casestudies/dh/common/library"
+import tm "github.com/viperproject/ReusableProtocolVerificationLibrary/term"
+import . "github.com/viperproject/ProtocolVerificationCaseStudies/dh/common/library"
 
 
 ghost

@@ -1,8 +1,8 @@
 package messageResponder
 
-import tm "github.com/ModularVerification/ReusableVerificationLibrary/term"
+import tm "github.com/viperproject/ReusableProtocolVerificationLibrary/term"
 
-import . "github.com/ModularVerification/casestudies/wireguard/verification/messages/common"
+import . "github.com/viperproject/ProtocolVerificationCaseStudies/wireguard/verification/messages/common"
 
 
 // bytes

@@ -1,14 +1,14 @@
 package initiator
 
-//@ import "github.com/ModularVerification/ReusableVerificationLibrary/label"
-import ll "github.com/ModularVerification/ReusableVerificationLibrary/labeledlibrary"
-//@ import labeledlib "github.com/ModularVerification/ReusableVerificationLibrary/labeledlibrary/library"
-//@ import "github.com/ModularVerification/ReusableVerificationLibrary/labeling"
-//@ import p "github.com/ModularVerification/ReusableVerificationLibrary/principal"
-//@ import tm "github.com/ModularVerification/ReusableVerificationLibrary/term"
+//@ import "github.com/viperproject/ReusableProtocolVerificationLibrary/label"
+import ll "github.com/viperproject/ReusableProtocolVerificationLibrary/labeledlibrary"
+//@ import labeledlib "github.com/viperproject/ReusableProtocolVerificationLibrary/labeledlibrary/library"
+//@ import "github.com/viperproject/ReusableProtocolVerificationLibrary/labeling"
+//@ import p "github.com/viperproject/ReusableProtocolVerificationLibrary/principal"
+//@ import tm "github.com/viperproject/ReusableProtocolVerificationLibrary/term"
 
-import lib "github.com/ModularVerification/casestudies/wireguard/library"
-//@ import . "github.com/ModularVerification/casestudies/wireguard/verification/common"
+import lib "github.com/viperproject/ProtocolVerificationCaseStudies/wireguard/library"
+//@ import . "github.com/viperproject/ProtocolVerificationCaseStudies/wireguard/verification/common"
 
 
 // to retain a similar code structure, the parameters passed to the implementation (such as its secret key or the peer's public key)

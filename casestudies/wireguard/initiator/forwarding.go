@@ -1,19 +1,19 @@
 package initiator
 
-//@ import arb "github.com/ModularVerification/ReusableVerificationLibrary/arbitrary"
-//@ import ev "github.com/ModularVerification/ReusableVerificationLibrary/event"
-//@ import "github.com/ModularVerification/ReusableVerificationLibrary/label"
-//@ import labeledlib "github.com/ModularVerification/ReusableVerificationLibrary/labeledlibrary/library"
-//@ import "github.com/ModularVerification/ReusableVerificationLibrary/labeling"
-//@ import p "github.com/ModularVerification/ReusableVerificationLibrary/principal"
-//@ import tm "github.com/ModularVerification/ReusableVerificationLibrary/term"
-//@ import tr "github.com/ModularVerification/ReusableVerificationLibrary/trace"
-//@ import u "github.com/ModularVerification/ReusableVerificationLibrary/usage"
-//@ import . "github.com/ModularVerification/casestudies/wireguard/verification/common"
+//@ import arb "github.com/viperproject/ReusableProtocolVerificationLibrary/arbitrary"
+//@ import ev "github.com/viperproject/ReusableProtocolVerificationLibrary/event"
+//@ import "github.com/viperproject/ReusableProtocolVerificationLibrary/label"
+//@ import labeledlib "github.com/viperproject/ReusableProtocolVerificationLibrary/labeledlibrary/library"
+//@ import "github.com/viperproject/ReusableProtocolVerificationLibrary/labeling"
+//@ import p "github.com/viperproject/ReusableProtocolVerificationLibrary/principal"
+//@ import tm "github.com/viperproject/ReusableProtocolVerificationLibrary/term"
+//@ import tr "github.com/viperproject/ReusableProtocolVerificationLibrary/trace"
+//@ import u "github.com/viperproject/ReusableProtocolVerificationLibrary/usage"
+//@ import . "github.com/viperproject/ProtocolVerificationCaseStudies/wireguard/verification/common"
 
-import lib "github.com/ModularVerification/casestudies/wireguard/library"
-//@ import .   "github.com/ModularVerification/casestudies/wireguard/verification/messages/initiator"
-//@ import pap "github.com/ModularVerification/casestudies/wireguard/verification/pattern"
+import lib "github.com/viperproject/ProtocolVerificationCaseStudies/wireguard/library"
+//@ import .   "github.com/viperproject/ProtocolVerificationCaseStudies/wireguard/verification/messages/initiator"
+//@ import pap "github.com/viperproject/ProtocolVerificationCaseStudies/wireguard/verification/pattern"
 
 
 // trusted wrapper around the library's `GetPacket` function
