@@ -22,7 +22,7 @@ import (
 
 	"github.com/viperproject/ProtocolVerificationCaseStudies/wireguard/initiator"
 	"github.com/viperproject/ProtocolVerificationCaseStudies/wireguard/log"
-	"github.com/viperproject/ProtocolVerificationCaseStudies/wireguardies/wireguardies/wireguard/responder"
+	"github.com/viperproject/ProtocolVerificationCaseStudies/wireguard/responder"
 )
 
 const logLevel = log.LogLevelError
