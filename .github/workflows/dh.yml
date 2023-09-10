@@ -42,7 +42,7 @@ jobs:
       - name: Setup verification of DH
         run: |
           ./load-modules.sh "$GITHUB_WORKSPACE/.modules"
-          mkdir -p $GITHUB_WORKSPACE/.modules/github.com/ModularVerification
+          mkdir -p $GITHUB_WORKSPACE/.modules/github.com/viperproject
         working-directory: casestudies/dh
 
       - name: Link Reusable Verification Library
